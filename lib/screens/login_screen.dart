@@ -20,8 +20,19 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  String _formatE164(String raw) {
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('0')) {
+      return '+94${digits.substring(1)}';
+    }
+    if (digits.startsWith('94')) {
+      return '+$digits';
+    }
+    return '+94$digits';
+  }
+
   Future<void> _onLogin() async {
-    final phone = _controller.text.trim();
+    final phone = _formatE164(_controller.text.trim());
     if (phone.isEmpty) return;
 
     final auth = context.read<AuthProvider>();

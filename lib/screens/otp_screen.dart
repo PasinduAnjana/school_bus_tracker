@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/user.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/otp_field.dart';
 import '../widgets/squishy_button.dart';
@@ -14,37 +13,21 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   String _code = '';
+  bool _verifying = false;
 
   Future<void> _onVerify() async {
-    if (_code.length != 4) return;
+    if (_code.length != 6 || _verifying) return;
+    _verifying = true;
 
     final auth = context.read<AuthProvider>();
     final success = await auth.verifyOtp(_code);
+    _verifying = false;
 
     if (!mounted) return;
 
     if (success) {
-      final user = auth.currentUser!;
-      Widget destination;
-      switch (user.role) {
-        case UserRole.admin:
-          destination = const _PlaceholderScreen(title: 'Admin Dashboard');
-        case UserRole.driver:
-          destination = const _PlaceholderScreen(title: 'Driver Dashboard');
-        case UserRole.parent:
-          destination = const _PlaceholderScreen(title: 'Parent Dashboard');
-      }
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, _, _) => destination,
-          transitionsBuilder: (_, anim, _, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-        (_) => false,
-      );
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid code. Try again.')),
@@ -73,7 +56,7 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Enter the 4-digit code sent to\n${auth.phoneNumber}',
+                'Enter the 6-digit code sent to\n${auth.phoneNumber}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context)
@@ -100,24 +83,6 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 32),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          '$title coming soon',
-          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );

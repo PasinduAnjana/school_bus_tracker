@@ -1,11 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
 
-class RoutesTab extends StatelessWidget {
+class RoutesTab extends StatefulWidget {
   const RoutesTab({super.key});
 
   @override
+  State<RoutesTab> createState() => _RoutesTabState();
+}
+
+class _RoutesTabState extends State<RoutesTab> {
+  String? _selectedRouteId;
+  String? _selectedDriverId;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminProvider>().loadRoutes();
+    });
+  }
+
+  Future<void> _assign() async {
+    if (_selectedRouteId == null) return;
+    await context
+        .read<AdminProvider>()
+        .assignDriver(_selectedRouteId!, _selectedDriverId);
+    if (mounted) {
+      setState(() {
+        _selectedRouteId = null;
+        _selectedDriverId = null;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final admin = context.watch<AdminProvider>();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
@@ -15,34 +48,35 @@ class RoutesTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Assign Driver to Route',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('Assign Driver to Route',
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
+                  key: ValueKey('route_$_selectedRouteId'),
+                  initialValue: _selectedRouteId,
                   decoration: const InputDecoration(labelText: 'Route'),
-                  items: const [
-                    DropdownMenuItem(value: 'r1', child: Text('Colombo 1 - Morning')),
-                    DropdownMenuItem(value: 'r2', child: Text('Colombo 1 - Afternoon')),
-                    DropdownMenuItem(value: 'r3', child: Text('Colombo 2 - Morning')),
-                  ],
-                  onChanged: (_) {},
+                  items: admin.routes
+                      .map((r) => DropdownMenuItem(
+                          value: r.id, child: Text(r.name)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedRouteId = v),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
+                  key: ValueKey('driver_$_selectedDriverId'),
+                  initialValue: _selectedDriverId,
                   decoration: const InputDecoration(labelText: 'Driver'),
-                  items: const [
-                    DropdownMenuItem(value: 'd1', child: Text('Saman Kumara')),
-                    DropdownMenuItem(value: 'd2', child: Text('Nuwan Perera')),
-                  ],
-                  onChanged: (_) {},
+                  items: admin.drivers
+                      .map((d) => DropdownMenuItem(
+                          value: d.id, child: Text(d.phoneNumber)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedDriverId = v),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _assign,
                     child: const Text('Assign'),
                   ),
                 ),
@@ -50,23 +84,33 @@ class RoutesTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildRouteCard(context, 'Colombo 1 - Morning', 'Saman Kumara'),
-          _buildRouteCard(context, 'Colombo 1 - Afternoon', 'Nuwan Perera'),
+          Text('Routes', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (admin.routes.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('No routes yet.'),
+              ),
+            )
+          else
+            ...admin.routes.map((r) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.route),
+                    title: Text(r.name),
+                    subtitle: Text(r.driverPhone ?? 'No driver assigned'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: () {
+                        setState(() {
+                          _selectedRouteId = r.id;
+                          _selectedDriverId = r.driverId;
+                        });
+                      },
+                    ),
+                  ),
+                )),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRouteCard(BuildContext context, String route, String driver) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.route),
-        title: Text(route),
-        subtitle: Text('Driver: $driver'),
-        trailing: IconButton(
-          icon: const Icon(Icons.edit_outlined),
-          onPressed: () {},
-        ),
       ),
     );
   }

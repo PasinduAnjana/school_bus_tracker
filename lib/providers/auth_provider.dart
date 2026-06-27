@@ -25,7 +25,8 @@ class AuthProvider extends ChangeNotifier {
     try {
       final session = SupabaseService.client.auth.currentSession;
       if (session != null && session.user.phone != null) {
-        _fetchUser(session.user.phone!);
+        final phone = '+${session.user.phone!.replaceAll('+', '')}';
+        _fetchUser(phone);
         return;
       }
     } catch (_) {
@@ -44,7 +45,8 @@ class AuthProvider extends ChangeNotifier {
           .single();
       _currentUser = AppUser.fromMap(result);
       _status = AuthStatus.authenticated;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('_fetchUser error: $e');
       _status = AuthStatus.unauthenticated;
     }
     notifyListeners();
@@ -93,15 +95,15 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      debugPrint('verifyOtp: phone=$_phoneNumber, code=$code');
       final response = await SupabaseService.client.auth.verifyOTP(
         phone: _phoneNumber,
         token: code,
         type: OtpType.sms,
       );
-      final phone = response.user?.phone;
-      if (phone == null) return false;
+      debugPrint('verifyOtp: response phone=${response.user?.phone}');
 
-      await _fetchUser(phone);
+      await _fetchUser(_phoneNumber);
       return _status == AuthStatus.authenticated;
     } catch (e) {
       debugPrint('verifyOtp error: $e');

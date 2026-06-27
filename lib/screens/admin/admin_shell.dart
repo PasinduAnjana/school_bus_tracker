@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/admin_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'users_tab.dart';
 import 'payments_tab.dart';
 import 'routes_tab.dart';
@@ -19,31 +22,38 @@ class _AdminShellState extends State<AdminShell> {
     _TabItem(label: 'Routes & Drivers', icon: Icons.route_outlined),
   ];
 
-  final _screens = const [
-    UsersTab(),
-    PaymentsTab(),
-    RoutesTab(),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_tabs[_index].label),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {},
+    return ChangeNotifierProvider(
+      create: (_) => AdminProvider(),
+      child: Consumer<AuthProvider>(
+        builder: (_, auth, _) => Scaffold(
+          appBar: AppBar(
+            title: Text(_tabs[_index].label),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () => auth.signOut(),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: _screens[_index],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: _tabs
-            .map((t) => NavigationDestination(icon: Icon(t.icon), label: t.label))
-            .toList(),
+          body: IndexedStack(
+            index: _index,
+            children: const [
+              UsersTab(),
+              PaymentsTab(),
+              RoutesTab(),
+            ],
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: (i) => setState(() => _index = i),
+            destinations: _tabs
+                .map((t) => NavigationDestination(
+                    icon: Icon(t.icon), label: t.label))
+                .toList(),
+          ),
+        ),
       ),
     );
   }
