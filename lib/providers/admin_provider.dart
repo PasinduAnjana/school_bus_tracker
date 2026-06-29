@@ -279,12 +279,12 @@ class AdminProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final data = await SupabaseService.client
+      final payments = await SupabaseService.client
           .from('payments')
           .select('id, student_id, month, paid, student:students!student_id(name)')
           .eq('month', month)
           .order('student_id');
-      _payments = (data as List).map((e) {
+      _payments = (payments as List).map((e) {
         final map = e as Map<String, dynamic>;
         final student = map['student'] as Map<String, dynamic>;
         return PaymentWithStudent(
@@ -295,11 +295,48 @@ class AdminProvider extends ChangeNotifier {
           paid: map['paid'] as bool,
         );
       }).toList();
+
+      final paidStudentIds = _payments.map((p) => p.studentId).toSet();
+
+      final students = await SupabaseService.client
+          .from('students')
+          .select('id, name');
+      for (final s in students as List) {
+        final map = s as Map<String, dynamic>;
+        if (!paidStudentIds.contains(map['id'] as String)) {
+          await SupabaseService.client.from('payments').insert({
+            'student_id': map['id'],
+            'month': month,
+            'paid': false,
+          });
+        }
+      }
+
+      await _reloadPayments(month);
     } catch (e) {
       debugPrint('loadPayments error: $e');
     }
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _reloadPayments(String month) async {
+    final data = await SupabaseService.client
+        .from('payments')
+        .select('id, student_id, month, paid, student:students!student_id(name)')
+        .eq('month', month)
+        .order('student_id');
+    _payments = (data as List).map((e) {
+      final map = e as Map<String, dynamic>;
+      final student = map['student'] as Map<String, dynamic>;
+      return PaymentWithStudent(
+        id: map['id'] as String,
+        studentId: map['student_id'] as String,
+        studentName: student['name'] as String,
+        month: map['month'] as String,
+        paid: map['paid'] as bool,
+      );
+    }).toList();
   }
 
   Future<bool> togglePayment(String paymentId, bool currentValue) async {
