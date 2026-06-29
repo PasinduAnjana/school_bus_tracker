@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/dev_bypass.dart';
 import '../models/user.dart';
 import '../services/supabase_client.dart';
 
@@ -58,10 +57,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> sendOtp() async {
-    if (DevBypass.enabled && _phoneNumber == DevBypass.phone) {
-      return true;
-    }
-
     _isLoading = true;
     notifyListeners();
 
@@ -84,17 +79,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      if (DevBypass.enabled && _phoneNumber == DevBypass.phone) {
-        if (code != DevBypass.code) return false;
-        _currentUser = AppUser(
-          id: 'dev-bypass-id',
-          phoneNumber: '0770000000',
-          role: UserRole.admin,
-        );
-        _status = AuthStatus.authenticated;
-        return true;
-      }
-
       debugPrint('verifyOtp: phone=$_phoneNumber, code=$code');
       final response = await SupabaseService.client.auth.verifyOTP(
         phone: _phoneNumber,

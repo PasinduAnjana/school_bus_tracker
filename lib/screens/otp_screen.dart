@@ -26,7 +26,6 @@ class _OtpScreenState extends State<OtpScreen> {
     if (!mounted) return;
 
     if (success) {
-      if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

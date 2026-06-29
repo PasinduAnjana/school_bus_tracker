@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/halt.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/supabase_client.dart';
 import '../../widgets/squishy_button.dart';
 
@@ -59,7 +61,7 @@ class _DriverShellState extends State<DriverShell> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {},
+            onPressed: () => context.read<AuthProvider>().signOut(),
           ),
         ],
       ),

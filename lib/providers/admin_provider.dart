@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/halt.dart';
 import '../services/supabase_client.dart';
+import '../utils/phone_utils.dart';
 
 class WhitelistedUser {
   final String id;
@@ -141,7 +142,7 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> addUser(String phone, String role) async {
     try {
       await SupabaseService.client.from('users_whitelist').insert({
-        'phone_number': phone,
+        'phone_number': formatE164(phone),
         'role': role,
       });
       await loadUsers();
@@ -192,8 +193,9 @@ class AdminProvider extends ChangeNotifier {
   }
 
   WhitelistedUser? findUserByPhone(String phone) {
+    final normalized = formatE164(phone);
     try {
-      return _users.firstWhere((u) => u.phoneNumber == phone);
+      return _users.firstWhere((u) => u.phoneNumber == normalized);
     } catch (_) {
       return null;
     }
@@ -202,12 +204,13 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> addStudentWithParent(
       String studentName, String parentPhone, String? parentName) async {
     try {
-      var parent = findUserByPhone(parentPhone);
+      final normalizedPhone = formatE164(parentPhone);
+      var parent = findUserByPhone(normalizedPhone);
       if (parent == null) {
         final name = parentName?.trim();
         if (name == null || name.isEmpty) return false;
         await SupabaseService.client.from('users_whitelist').insert({
-          'phone_number': parentPhone,
+          'phone_number': normalizedPhone,
           'role': 'Parent',
         });
         await loadUsers();

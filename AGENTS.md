@@ -19,7 +19,6 @@ Flutter app (Dart, multi-platform). Three roles (Admin, Driver, Parent) determin
 - **Supabase anon key must be copied exactly from the dashboard** — it includes a JWT header prefix (e.g., `eyJ...`). The `.env.example` placeholder shows the full key format. Never prepend anything.
 - **Auth uses Supabase Auth phone OTP** — `signInWithOtp()` / `verifyOTP()` manage session automatically. RLS policies (`auth.role() = 'authenticated'`) work because the user has a real JWT after verification.
 - **Custom SMS provider (Text.lk)** — a Supabase Auth Hook (Send SMS hook) forwards OTPs to Text.lk via the `textlk-sms` Edge Function.
-- **Dev bypass phone** — `0770000000` + code `4592` skips all backend calls and auto-assigns Admin role. Useful for UI development.
 - **Phone number format**: Supabase Auth strips the `+` prefix from returned phone numbers. The app normalises it before whitelist lookups.
 
 ## Structure
@@ -102,8 +101,7 @@ Run this in the Supabase dashboard SQL Editor after migrations are pushed.
 
 ```bash
 flutter run
-# Use dev bypass:  0770000000 / 4592
-# Or a real phone: enter number → receive SMS → enter 6-digit OTP
+# Enter a phone number that exists in users_whitelist → receive SMS → enter 6-digit OTP
 ```
 
 ## Edge Functions

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../utils/phone_utils.dart';
 import '../widgets/squishy_button.dart';
 import 'otp_screen.dart';
 
@@ -21,19 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  String _formatE164(String raw) {
-    final digits = raw.replaceAll(RegExp(r'\D'), '');
-    if (digits.startsWith('0')) {
-      return '+94${digits.substring(1)}';
-    }
-    if (digits.startsWith('94')) {
-      return '+$digits';
-    }
-    return '+94$digits';
-  }
-
   Future<void> _onLogin() async {
-    final phone = _formatE164(_controller.text.trim());
+    final phone = formatE164(_controller.text.trim());
     if (phone.isEmpty) return;
 
     final auth = context.read<AuthProvider>();
