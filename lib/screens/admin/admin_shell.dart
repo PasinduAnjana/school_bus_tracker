@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/auth_provider.dart';
+import 'drivers_tab.dart';
 import 'users_tab.dart';
 import 'payments_tab.dart';
 import 'routes_tab.dart';
@@ -17,9 +18,10 @@ class _AdminShellState extends State<AdminShell> {
   int _index = 0;
 
   final _tabs = const [
-    _TabItem(label: 'Users & Students', icon: Icons.people_outline),
+    _TabItem(label: 'Students', icon: Icons.people_outline),
+    _TabItem(label: 'Drivers', icon: Icons.person_pin_outlined),
     _TabItem(label: 'Payments', icon: Icons.account_balance_wallet_outlined),
-    _TabItem(label: 'Routes & Drivers', icon: Icons.route_outlined),
+    _TabItem(label: 'Routes', icon: Icons.route_outlined),
   ];
 
   @override
@@ -41,6 +43,7 @@ class _AdminShellState extends State<AdminShell> {
             index: _index,
             children: const [
               UsersTab(),
+              DriversTab(),
               PaymentsTab(),
               RoutesTab(),
             ],

@@ -186,16 +186,37 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addStudent(String name, String parentId) async {
+  WhitelistedUser? findUserByPhone(String phone) {
     try {
+      return _users.firstWhere((u) => u.phoneNumber == phone);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> addStudentWithParent(
+      String studentName, String parentPhone, String? parentName) async {
+    try {
+      var parent = findUserByPhone(parentPhone);
+      if (parent == null) {
+        final name = parentName?.trim();
+        if (name == null || name.isEmpty) return false;
+        await SupabaseService.client.from('users_whitelist').insert({
+          'phone_number': parentPhone,
+          'role': 'Parent',
+        });
+        await loadUsers();
+        parent = findUserByPhone(parentPhone);
+        if (parent == null) return false;
+      }
       await SupabaseService.client.from('students').insert({
-        'name': name,
-        'parent_id': parentId,
+        'name': studentName,
+        'parent_id': parent.id,
       });
       await loadStudents();
       return true;
     } catch (e) {
-      debugPrint('addStudent error: $e');
+      debugPrint('addStudentWithParent error: $e');
       return false;
     }
   }

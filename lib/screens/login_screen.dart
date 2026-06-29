@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/squishy_button.dart';
@@ -82,6 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _controller,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Phone number',
                   hintText: '077 123 4567',
