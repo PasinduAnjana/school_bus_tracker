@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
+import 'route_detail_screen.dart';
 
 class RoutesTab extends StatefulWidget {
   const RoutesTab({super.key});
@@ -11,8 +12,7 @@ class RoutesTab extends StatefulWidget {
 }
 
 class _RoutesTabState extends State<RoutesTab> {
-  String? _selectedRouteId;
-  String? _selectedDriverId;
+  final _nameCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -22,17 +22,17 @@ class _RoutesTabState extends State<RoutesTab> {
     });
   }
 
-  Future<void> _assign() async {
-    if (_selectedRouteId == null) return;
-    await context
-        .read<AdminProvider>()
-        .assignDriver(_selectedRouteId!, _selectedDriverId);
-    if (mounted) {
-      setState(() {
-        _selectedRouteId = null;
-        _selectedDriverId = null;
-      });
-    }
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createRoute() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    await context.read<AdminProvider>().createRoute(name);
+    _nameCtrl.clear();
   }
 
   @override
@@ -48,36 +48,22 @@ class _RoutesTabState extends State<RoutesTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Assign Driver to Route',
+                Text('Create Route',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('route_$_selectedRouteId'),
-                  initialValue: _selectedRouteId,
-                  decoration: const InputDecoration(labelText: 'Route'),
-                  items: admin.routes
-                      .map((r) => DropdownMenuItem(
-                          value: r.id, child: Text(r.name)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedRouteId = v),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('driver_$_selectedDriverId'),
-                  initialValue: _selectedDriverId,
-                  decoration: const InputDecoration(labelText: 'Driver'),
-                  items: admin.drivers
-                      .map((d) => DropdownMenuItem(
-                          value: d.id, child: Text(d.phoneNumber)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedDriverId = v),
+                TextField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Route name',
+                    hintText: 'e.g. Colombo 1 - Morning',
+                  ),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _assign,
-                    child: const Text('Assign'),
+                    onPressed: _createRoute,
+                    child: const Text('Create'),
                   ),
                 ),
               ],
@@ -99,14 +85,15 @@ class _RoutesTabState extends State<RoutesTab> {
                     leading: const Icon(Icons.route),
                     title: Text(r.name),
                     subtitle: Text(r.driverPhone ?? 'No driver assigned'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      onPressed: () {
-                        setState(() {
-                          _selectedRouteId = r.id;
-                          _selectedDriverId = r.driverId;
-                        });
-                      },
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => RouteDetailScreen(
+                          routeId: r.id,
+                          routeName: r.name,
+                        ),
+                      ),
                     ),
                   ),
                 )),

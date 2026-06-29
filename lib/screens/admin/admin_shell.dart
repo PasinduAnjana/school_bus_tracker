@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'drivers_tab.dart';
 import 'users_tab.dart';
@@ -26,36 +25,33 @@ class _AdminShellState extends State<AdminShell> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminProvider(),
-      child: Consumer<AuthProvider>(
-        builder: (_, auth, _) => Scaffold(
-          appBar: AppBar(
-            title: Text(_tabs[_index].label),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () => auth.signOut(),
-              ),
-            ],
-          ),
-          body: IndexedStack(
-            index: _index,
-            children: const [
-              UsersTab(),
-              DriversTab(),
-              PaymentsTab(),
-              RoutesTab(),
-            ],
-          ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _index,
-            onDestinationSelected: (i) => setState(() => _index = i),
-            destinations: _tabs
-                .map((t) => NavigationDestination(
-                    icon: Icon(t.icon), label: t.label))
-                .toList(),
-          ),
+    return Consumer<AuthProvider>(
+      builder: (_, auth, _) => Scaffold(
+        appBar: AppBar(
+          title: Text(_tabs[_index].label),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => auth.signOut(),
+            ),
+          ],
+        ),
+        body: IndexedStack(
+          index: _index,
+          children: const [
+            UsersTab(),
+            DriversTab(),
+            PaymentsTab(),
+            RoutesTab(),
+          ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: _tabs
+              .map((t) => NavigationDestination(
+                  icon: Icon(t.icon), label: t.label))
+              .toList(),
         ),
       ),
     );

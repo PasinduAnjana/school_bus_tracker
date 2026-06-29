@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../models/halt.dart';
 import '../services/supabase_client.dart';
 
 class WhitelistedUser {
@@ -98,6 +99,7 @@ class AdminProvider extends ChangeNotifier {
   List<StudentWithParent> _students = [];
   List<RouteWithDriver> _routes = [];
   List<PaymentWithStudent> _payments = [];
+  final Map<String, List<Halt>> _haltsByRoute = {};
   String _selectedMonth = '';
   bool _isLoading = false;
 
@@ -111,6 +113,9 @@ class AdminProvider extends ChangeNotifier {
       _users.where((u) => u.role == 'Parent').toList();
   String get selectedMonth => _selectedMonth;
   bool get isLoading => _isLoading;
+
+  List<Halt> halts(String routeId) =>
+      _haltsByRoute[routeId] ?? [];
 
   static String currentMonth() {
     final now = DateTime.now();
@@ -271,6 +276,134 @@ class AdminProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('assignDriver error: $e');
       return false;
+    }
+  }
+
+  Future<bool> createRoute(String name) async {
+    try {
+      await SupabaseService.client.from('routes').insert({'name': name});
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('createRoute error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteRoute(String id) async {
+    try {
+      await SupabaseService.client.from('routes').delete().eq('id', id);
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('deleteRoute error: $e');
+      return false;
+    }
+  }
+
+  Future<void> loadHalts(String routeId) async {
+    try {
+      final data = await SupabaseService.client
+          .from('halts')
+          .select('*')
+          .eq('route_id', routeId)
+          .order('stop_order');
+      _haltsByRoute[routeId] =
+          (data as List).map((e) => Halt.fromMap(e)).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadHalts error: $e');
+    }
+  }
+
+  Future<bool> addHalt(
+      String routeId, String name, String arrivalTime,
+      {double? latitude, double? longitude}) async {
+    try {
+      final halts = _haltsByRoute[routeId] ?? [];
+      await SupabaseService.client.from('halts').insert({
+        'route_id': routeId,
+        'name': name,
+        'arrival_time': arrivalTime,
+        'latitude': latitude,
+        'longitude': longitude,
+        'stop_order': halts.length,
+      });
+      await loadHalts(routeId);
+      return true;
+    } catch (e) {
+      debugPrint('addHalt error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateHalt(
+      String haltId,
+      String name,
+      String arrivalTime,
+      {double? latitude, double? longitude}) async {
+    try {
+      await SupabaseService.client.from('halts').update({
+        'name': name,
+        'arrival_time': arrivalTime,
+        'latitude': latitude,
+        'longitude': longitude,
+      }).eq('id', haltId);
+      final routeId = _haltsByRoute.entries
+          .firstWhere((e) => e.value.any((h) => h.id == haltId))
+          .key;
+      await loadHalts(routeId);
+      return true;
+    } catch (e) {
+      debugPrint('updateHalt error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteHalt(String haltId) async {
+    try {
+      final entry = _haltsByRoute.entries
+          .firstWhere((e) => e.value.any((h) => h.id == haltId));
+      await SupabaseService.client
+          .from('halts')
+          .delete()
+          .eq('id', haltId);
+      await loadHalts(entry.key);
+      return true;
+    } catch (e) {
+      debugPrint('deleteHalt error: $e');
+      return false;
+    }
+  }
+
+  Future<void> reorderHalts(String routeId, List<String> haltIds) async {
+    try {
+      final existing = _haltsByRoute[routeId];
+      if (existing == null) return;
+      final reordered = haltIds.map((id) => existing.firstWhere((h) => h.id == id)).toList();
+      for (var i = 0; i < reordered.length; i++) {
+        reordered[i] = Halt(
+          id: reordered[i].id,
+          routeId: reordered[i].routeId,
+          name: reordered[i].name,
+          arrivalTime: reordered[i].arrivalTime,
+          latitude: reordered[i].latitude,
+          longitude: reordered[i].longitude,
+          stopOrder: i,
+        );
+      }
+      _haltsByRoute[routeId] = reordered;
+      notifyListeners();
+
+      for (var i = 0; i < haltIds.length; i++) {
+        await SupabaseService.client
+            .from('halts')
+            .update({'stop_order': i})
+            .eq('id', haltIds[i]);
+      }
+    } catch (e) {
+      debugPrint('reorderHalts error: $e');
+      await loadHalts(routeId);
     }
   }
 

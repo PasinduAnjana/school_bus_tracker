@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../models/halt.dart';
+import '../../services/supabase_client.dart';
 import '../../widgets/squishy_button.dart';
 
 class DriverShell extends StatefulWidget {
@@ -9,8 +11,45 @@ class DriverShell extends StatefulWidget {
 }
 
 class _DriverShellState extends State<DriverShell> {
-  String? _selectedRoute;
+  List<Map<String, dynamic>> _routes = [];
+  List<Halt> _halts = [];
+  String? _selectedRouteId;
   bool _tripActive = false;
+  final Set<String> _completedHalts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRoutes();
+  }
+
+  Future<void> _loadRoutes() async {
+    try {
+      final data = await SupabaseService.client
+          .from('routes')
+          .select('id, name')
+          .order('name');
+      setState(() => _routes = (data as List).cast<Map<String, dynamic>>());
+    } catch (e) {
+      debugPrint('Driver loadRoutes error: $e');
+    }
+  }
+
+  Future<void> _loadHalts(String routeId) async {
+    try {
+      final data = await SupabaseService.client
+          .from('halts')
+          .select('*')
+          .eq('route_id', routeId)
+          .order('stop_order');
+      setState(() {
+        _halts = (data as List).map((e) => Halt.fromMap(e)).toList();
+        _completedHalts.clear();
+      });
+    } catch (e) {
+      debugPrint('Driver loadHalts error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +74,56 @@ class _DriverShellState extends State<DriverShell> {
             ),
             const SizedBox(height: 32),
             DropdownButtonFormField<String>(
-              initialValue: _selectedRoute,
-              decoration: const InputDecoration(
-                labelText: 'Select route',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'r1', child: Text('Colombo 1 - Morning')),
-                DropdownMenuItem(value: 'r2', child: Text('Colombo 1 - Afternoon')),
-              ],
+              initialValue: _selectedRouteId,
+              decoration: const InputDecoration(labelText: 'Select route'),
+              items: _routes
+                  .map((r) => DropdownMenuItem(
+                      value: r['id'] as String,
+                      child: Text(r['name'] as String)))
+                  .toList(),
               onChanged: _tripActive
                   ? null
-                  : (v) => setState(() => _selectedRoute = v),
+                  : (v) {
+                      setState(() => _selectedRouteId = v);
+                      if (v != null) _loadHalts(v);
+                    },
             ),
+            if (_selectedRouteId != null && _halts.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Text('Halts', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView(
+                  children: _halts.map((halt) {
+                    final done = _completedHalts.contains(halt.id);
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: done
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFFFFD700).withValues(alpha: 0.3),
+                          child: Text('${halt.stopOrder + 1}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: done ? Colors.white : null,
+                              )),
+                        ),
+                        title: Text(halt.name),
+                        subtitle: Text('Arrival: ${halt.arrivalTime}'),
+                        trailing: done
+                            ? const Icon(Icons.check_circle,
+                                color: Color(0xFF4CAF50))
+                            : IconButton(
+                                icon: const Icon(Icons.check_circle_outline),
+                                onPressed: () => setState(
+                                    () => _completedHalts.add(halt.id)),
+                              ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
             const Spacer(flex: 2),
             SquishyButton(
               label: _tripActive ? 'STOP TRIP' : 'START TRIP',
@@ -54,7 +131,7 @@ class _DriverShellState extends State<DriverShell> {
                   ? const Color(0xFFFF5252)
                   : const Color(0xFFFFD700),
               foregroundColor: const Color(0xFF1E1E1E),
-              onTap: _selectedRoute == null && !_tripActive
+              onTap: _selectedRouteId == null && !_tripActive
                   ? null
                   : () => setState(() => _tripActive = !_tripActive),
             ),
