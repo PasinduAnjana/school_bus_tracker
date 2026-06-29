@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../models/halt.dart';
+import '../../widgets/map_pin.dart';
 
 class MapPickerScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -34,21 +35,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
               point: LatLng(h.latitude!, h.longitude!),
               width: 120,
               height: 60,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 100),
-                    child: Text(h.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          backgroundColor: Colors.white70,
-                          fontSize: 11,
-                        )),
-                  ),
-                  const Icon(Icons.location_on,
-                      color: Color(0xFF9E9E9E), size: 32),
-                ],
+              child: MapPin(
+                label: h.name,
+                color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                size: 32,
               ),
             ))
         .toList();
@@ -63,7 +53,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         ),
         children: [
           TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            urlTemplate: 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.example.school_bus_tracker',
           ),
           MarkerLayer(
@@ -72,9 +62,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
               Marker(
                 point: _selected,
                 width: 40,
-                height: 40,
-                child: const Icon(Icons.location_on,
-                    color: Color(0xFFFF5252), size: 40),
+                height: 60,
+                child: const MapPin(size: 40),
               ),
             ],
           ),
