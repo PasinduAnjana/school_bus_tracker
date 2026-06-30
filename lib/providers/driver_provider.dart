@@ -232,6 +232,7 @@ class DriverProvider extends ChangeNotifier {
           .update({
             'latitude': _currentLat,
             'longitude': _currentLng,
+            'recorded_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('id', _liveLocationId!);
     } catch (e) {
