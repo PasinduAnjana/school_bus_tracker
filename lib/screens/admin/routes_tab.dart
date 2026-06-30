@@ -85,7 +85,40 @@ class _RoutesTabState extends State<RoutesTab> {
                     leading: const Icon(Icons.route),
                     title: Text(r.name),
                     subtitle: Text(r.driverPhone ?? 'No driver assigned'),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Color(0xFFFF5252)),
+                          onPressed: () async {
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Delete route'),
+                                content: Text('Delete "${r.name}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, true),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (ok == true) {
+                              await admin.deleteRoute(r.id);
+                            }
+                          },
+                        ),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

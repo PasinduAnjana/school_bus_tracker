@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/driver_provider.dart';
+import 'providers/monitor_provider.dart';
 import 'services/supabase_client.dart';
 
 void main() async {
@@ -15,6 +17,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => DriverProvider()),
+        ChangeNotifierProvider(create: (_) => MonitorProvider()),
       ],
       child: const App(),
     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'drivers_tab.dart';
+import 'monitor_tab.dart';
 import 'users_tab.dart';
 import 'payments_tab.dart';
 import 'routes_tab.dart';
@@ -21,6 +22,7 @@ class _AdminShellState extends State<AdminShell> {
     _TabItem(label: 'Drivers', icon: Icons.person_pin_outlined),
     _TabItem(label: 'Payments', icon: Icons.account_balance_wallet_outlined),
     _TabItem(label: 'Routes', icon: Icons.route_outlined),
+    _TabItem(label: 'Monitor', icon: Icons.map_outlined),
   ];
 
   @override
@@ -43,6 +45,7 @@ class _AdminShellState extends State<AdminShell> {
             DriversTab(),
             PaymentsTab(),
             RoutesTab(),
+            MonitorTab(),
           ],
         ),
         bottomNavigationBar: NavigationBar(
