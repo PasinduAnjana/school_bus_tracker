@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/driver_provider.dart';
+import '../profile_screen.dart';
 import '../../widgets/squishy_button.dart';
 
 class DriverShell extends StatefulWidget {
@@ -54,8 +55,13 @@ class _DriverShellState extends State<DriverShell> {
         title: Text(driver.selectedRouteName ?? 'Driver Dashboard'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthProvider>().signOut(),
+            icon: const Icon(Icons.person),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            ),
           ),
         ],
       ),

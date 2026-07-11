@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
+import '../profile_screen.dart';
 import '../../widgets/frosted_card.dart';
 
 class ParentShell extends StatefulWidget {
@@ -20,8 +19,13 @@ class _ParentShellState extends State<ParentShell> {
         title: const Text('Live Tracker'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthProvider>().signOut(),
+            icon: const Icon(Icons.person),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            ),
           ),
         ],
       ),

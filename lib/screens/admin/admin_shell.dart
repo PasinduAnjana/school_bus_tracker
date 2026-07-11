@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../profile_screen.dart';
 import 'drivers_tab.dart';
 import 'monitor_tab.dart';
 import 'users_tab.dart';
@@ -33,8 +34,13 @@ class _AdminShellState extends State<AdminShell> {
           title: Text(_tabs[_index].label),
           actions: [
             IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => auth.signOut(),
+              icon: const Icon(Icons.person),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              ),
             ),
           ],
         ),
