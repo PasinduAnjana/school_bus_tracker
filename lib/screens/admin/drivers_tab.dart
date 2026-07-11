@@ -146,7 +146,32 @@ class _DriversTabState extends State<DriversTab> {
                                 Icons.delete_outline,
                                 color: Theme.of(context).colorScheme.error,
                               ),
-                              onPressed: () => admin.deleteUser(d.id),
+                              onPressed: () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('Delete driver'),
+                                    content: Text(
+                                      'Delete ${d.phoneNumber}?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, true),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) {
+                                  admin.deleteUser(d.id);
+                                }
+                              },
                             ),
                           ),
                         );

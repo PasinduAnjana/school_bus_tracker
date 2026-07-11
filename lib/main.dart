@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,7 @@ void main() async {
   await dotenv.load();
   await SupabaseService.init();
   await NotificationService.init();
-  if (Platform.isAndroid || Platform.isIOS) {
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     backgroundServiceEntrypoint();
   }
   runApp(

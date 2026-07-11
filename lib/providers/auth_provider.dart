@@ -97,7 +97,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await SupabaseService.client.auth.signOut();
+    try {
+      await SupabaseService.client.auth.signOut();
+    } catch (_) {
+      // Proceed with local sign-out even if the server call fails
+    }
     _currentUser = null;
     _phoneNumber = '';
     _status = AuthStatus.unauthenticated;

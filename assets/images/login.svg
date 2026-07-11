@@ -1,0 +1,314 @@
+<svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+        <clipPath id="bus-clip">
+            <rect x="150" y="200" width="500" height="300" rx="30" />
+        </clipPath>
+    </defs>
+
+    <style>
+        /* --- Animations --- */
+
+        @keyframes busBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes wheelSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes cloudDrift1 {
+            0% { transform: translateX(10px); }
+            50% { transform: translateX(-10px); }
+            100% { transform: translateX(10px); }
+        }
+
+        @keyframes cloudDrift2 {
+            0% { transform: translateX(-15px); }
+            50% { transform: translateX(5px); }
+            100% { transform: translateX(-15px); }
+        }
+
+        @keyframes roadMove {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 60; }
+        }
+
+        @keyframes treeWobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            75% { transform: rotate(2deg); }
+        }
+
+        /* --- Applying Animations --- */
+
+        .bus-group {
+            animation: busBounce 0.4s infinite ease-in-out;
+            transform-origin: center bottom;
+            transform-box: fill-box;
+        }
+
+        .wheel-inner {
+            animation: wheelSpin 0.8s linear infinite;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+
+        .cloud-group-1 {
+            animation: cloudDrift1 8s infinite ease-in-out;
+        }
+
+        .cloud-group-2 {
+            animation: cloudDrift2 12s infinite ease-in-out;
+        }
+
+        .road-lines path.moving-line {
+            stroke-dasharray: 20 40;
+            animation: roadMove 0.9s linear infinite;
+        }
+
+        .tree-group {
+            animation: treeWobble 3s infinite ease-in-out;
+            transform-origin: bottom center;
+            transform-box: fill-box;
+        }
+    </style>
+
+    <!-- Background Elements -->
+    <g id="background-scenery">
+        <!-- Sun/Arc -->
+        <path d="M 240 280 A 160 160 0 0 1 560 280" fill="none" stroke="#f18052" stroke-width="30" stroke-linecap="round"/>
+        <path d="M 280 280 A 120 120 0 0 1 520 280" fill="none" stroke="#e86337" stroke-width="15" stroke-linecap="round"/>
+
+        <!-- Clouds Group 1 (Back) -->
+        <g class="cloud-group-1" fill="#ffffff">
+            <circle cx="280" cy="240" r="30" />
+            <circle cx="320" cy="220" r="40" />
+            <circle cx="370" cy="230" r="35" />
+            <circle cx="230" cy="260" r="25" />
+            <path d="M 230 260 L 370 260 L 370 280 L 230 280 Z" />
+        </g>
+
+        <!-- Clouds Group 2 (Front) -->
+        <g class="cloud-group-2" fill="#ffffff">
+            <circle cx="430" cy="230" r="35" />
+            <circle cx="480" cy="210" r="45" />
+            <circle cx="530" cy="240" r="30" />
+            <circle cx="580" cy="260" r="20" />
+            <path d="M 430 250 L 580 250 L 580 280 L 430 280 Z" />
+        </g>
+
+        <!-- Extra cloud fluff -->
+        <path d="M 180 290 Q 200 270 230 290" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+        <path d="M 550 290 Q 580 270 610 290" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+
+        <!-- Left Trees -->
+        <g transform="translate(130, 380)">
+            <g class="tree-group">
+                <path d="M 20 60 C 10 30, 30 0, 40 10 C 50 0, 70 30, 60 60 Z" fill="#b1b54a" />
+                <path d="M 20 60 C 10 30, 30 0, 40 10 C 50 0, 70 30, 60 60 Z" fill="rgba(0,0,0,0.15)" clip-path="inset(0 50% 0 0)" />
+                <rect x="37" y="55" width="6" height="30" fill="#3a2a32" />
+
+                <path d="M -10 70 C -20 40, 0 20, 10 30 C 20 20, 40 40, 30 70 Z" fill="#919c3b" />
+                <rect x="7" y="65" width="6" height="20" fill="#3a2a32" />
+            </g>
+        </g>
+
+        <!-- Right Trees -->
+        <g transform="translate(615, 395)">
+            <g class="tree-group">
+                <path d="M 10 50 C 0 20, 20 -10, 30 0 C 40 -10, 60 20, 50 50 Z" fill="#b1b54a" />
+                 <path d="M 10 50 C 0 20, 20 -10, 30 0 C 40 -10, 60 20, 50 50 Z" fill="rgba(0,0,0,0.15)" clip-path="inset(0 0 0 50%)" />
+                <rect x="27" y="45" width="6" height="25" fill="#3a2a32" />
+            </g>
+        </g>
+
+    </g>
+
+    <!-- The Bus -->
+    <g class="bus-group">
+        <!-- Underbelly/Shadow area -->
+        <rect x="200" y="420" width="370" height="30" fill="#3a2a32" rx="10" />
+        <rect x="470" y="440" width="130" height="20" fill="#3a2a32" rx="5" />
+
+        <!-- Main Body Fill -->
+        <path d="M 180 320 
+                 C 180 250, 250 240, 300 230 
+                 L 500 215 
+                 C 550 210, 580 215, 600 240
+                 L 620 320
+                 L 620 430
+                 L 180 430 Z" 
+              fill="#ffb320" />
+
+        <!-- Roof Shadow/Highlight (Subtle gradient effect simulated with paths) -->
+        <path d="M 185 300 C 185 255, 250 245, 300 235 L 500 220 C 540 215, 570 220, 590 240 L 590 250 C 570 230, 540 225, 500 230 L 300 245 C 250 255, 195 265, 195 300 Z" fill="#facc4f" />
+
+        <!-- Body Stroke -->
+        <path d="M 180 320 C 180 250, 250 240, 300 230 L 500 215 C 550 210, 580 215, 600 240 L 620 320 L 620 430 L 180 430 Z" fill="none" stroke="#3a2a32" stroke-width="6" stroke-linejoin="round"/>
+
+        <!-- Front Grill Area -->
+        <rect x="540" y="340" width="80" height="90" fill="#f5a41c" />
+
+        <!-- Bumper -->
+        <rect x="530" y="405" width="100" height="25" fill="#a4453b" rx="5" stroke="#3a2a32" stroke-width="4"/>
+        <rect x="525" y="430" width="110" height="15" fill="#8c372f" rx="3" stroke="#3a2a32" stroke-width="4"/>
+
+        <!-- Grill Lines -->
+        <line x1="550" y1="380" x2="610" y2="380" stroke="#3a2a32" stroke-width="3" stroke-linecap="round"/>
+        <line x1="555" y1="390" x2="605" y2="390" stroke="#3a2a32" stroke-width="3" stroke-linecap="round"/>
+        <line x1="560" y1="400" x2="600" y2="400" stroke="#3a2a32" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Side Stripes -->
+        <line x1="180" y1="355" x2="470" y2="340" stroke="#3a2a32" stroke-width="5" />
+        <line x1="180" y1="375" x2="470" y2="365" stroke="#3a2a32" stroke-width="4" />
+        <line x1="180" y1="395" x2="470" y2="385" stroke="#3a2a32" stroke-width="3" />
+
+        <!-- Front Window Group -->
+        <!-- Frame -->
+        <path d="M 525 285 L 605 285 Q 615 285 615 295 L 610 335 Q 610 340 600 340 L 525 340 Z" fill="#3a2a32" />
+        <!-- Glass -->
+        <path d="M 530 290 L 600 290 Q 605 290 605 295 L 602 332 Q 602 335 595 335 L 530 335 Z" fill="#2d6f78" />
+        <!-- Wiper marks/reflections -->
+        <path d="M 540 335 C 560 300, 580 290, 600 290" fill="none" stroke="#489fa6" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 570 335 C 585 315, 595 310, 605 310" fill="none" stroke="#489fa6" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Side Windows -->
+        <!-- Window 1 (Back) -->
+        <rect x="200" y="305" width="40" height="40" rx="8" fill="#3a2a32" transform="rotate(-3, 200, 305)" />
+        <rect x="203" y="308" width="34" height="34" rx="5" fill="#4d5f66" transform="rotate(-3, 200, 305)" />
+        <rect x="203" y="308" width="34" height="15" rx="5" fill="#2eb0ab" transform="rotate(-3, 200, 305)" />
+
+        <!-- Window 2 -->
+        <rect x="255" y="300" width="55" height="42" rx="8" fill="#3a2a32" transform="rotate(-4, 255, 300)" />
+        <rect x="258" y="303" width="49" height="36" rx="5" fill="#4d5f66" transform="rotate(-4, 255, 300)" />
+        <rect x="258" y="303" width="49" height="16" rx="5" fill="#2eb0ab" transform="rotate(-4, 255, 300)" />
+
+        <!-- Window 3 -->
+        <rect x="325" y="295" width="60" height="44" rx="8" fill="#3a2a32" transform="rotate(-5, 325, 295)" />
+        <rect x="328" y="298" width="54" height="38" rx="5" fill="#4d5f66" transform="rotate(-5, 325, 295)" />
+        <rect x="328" y="298" width="54" height="17" rx="5" fill="#2eb0ab" transform="rotate(-5, 325, 295)" />
+
+        <!-- Window 4 (Door Window) -->
+        <rect x="400" y="290" width="60" height="46" rx="8" fill="#3a2a32" transform="rotate(-6, 400, 290)" />
+        <rect x="403" y="293" width="54" height="40" rx="5" fill="#4d5f66" transform="rotate(-6, 400, 290)" />
+        <rect x="403" y="293" width="54" height="18" rx="5" fill="#2eb0ab" transform="rotate(-6, 400, 290)" />
+
+        <!-- Door Area -->
+        <path d="M 400 343 L 456 337 L 452 430 L 398 430 Z" fill="#4d5f66" stroke="#3a2a32" stroke-width="4" stroke-linejoin="round"/>
+        <!-- Door vertical divide -->
+        <line x1="428" y1="340" x2="425" y2="430" stroke="#3a2a32" stroke-width="3" />
+
+        <!-- Top Signage -->
+        <rect x="520" y="228" width="80" height="25" rx="8" fill="#3a2a32" transform="rotate(-2, 520, 228)"/>
+        <rect x="523" y="231" width="74" height="19" rx="5" fill="#ffb320" transform="rotate(-2, 520, 228)"/>
+
+        <!-- Front Lights -->
+        <!-- Left Headlight -->
+        <circle cx="545" cy="365" r="14" fill="#3a2a32" />
+        <circle cx="545" cy="365" r="11" fill="#ffffff" />
+        <!-- Right Headlight -->
+        <circle cx="615" cy="365" r="14" fill="#3a2a32" />
+        <circle cx="615" cy="365" r="11" fill="#ffffff" />
+
+        <!-- Tiny orange lights -->
+        <circle cx="538" cy="390" r="4" fill="#3a2a32" />
+        <circle cx="538" cy="390" r="2.5" fill="#ffb320" />
+        <circle cx="615" cy="390" r="4" fill="#3a2a32" />
+        <circle cx="615" cy="390" r="2.5" fill="#ffb320" />
+
+        <!-- Red Center Light -->
+        <circle cx="585" cy="355" r="6" fill="#cc3f30" />
+
+        <!-- Top Corner Lights -->
+        <circle cx="505" cy="245" r="8" fill="#3a2a32" />
+        <circle cx="505" cy="245" r="5" fill="#ffb320" />
+
+        <circle cx="615" cy="260" r="8" fill="#3a2a32" />
+        <circle cx="615" cy="260" r="5" fill="#ffb320" />
+
+        <circle cx="430" cy="268" r="4" fill="#3a2a32" />
+        <circle cx="390" cy="273" r="4" fill="#3a2a32" />
+
+        <!-- Side Mirrors -->
+        <!-- Left Mirror -->
+        <path d="M 505 275 L 500 275 Q 495 275 495 280 L 495 315 Q 495 320 500 320 L 505 320 Z" fill="#e86337" stroke="#3a2a32" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M 505 285 L 515 285" stroke="#3a2a32" stroke-width="4" />
+        <path d="M 505 310 L 515 310" stroke="#3a2a32" stroke-width="4" />
+
+        <!-- Right Mirror (partially visible) -->
+        <path d="M 625 275 L 635 275 Q 640 275 640 280 L 640 310 Q 640 315 635 315 L 625 315 Z" fill="#e86337" stroke="#3a2a32" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M 620 285 L 625 285" stroke="#3a2a32" stroke-width="4" />
+        <path d="M 620 305 L 625 305" stroke="#3a2a32" stroke-width="4" />
+
+        <!-- Streamer/Exhaust pipe back -->
+        <path d="M 180 415 L 160 415 L 160 425 L 180 425 Z" fill="#8c372f" stroke="#3a2a32" stroke-width="3" stroke-linejoin="round"/>
+
+    </g> <!-- End Bus Group -->
+
+    <!-- Wheels (Outside the bus group so they don't bounce with the body, or we can make them bounce slightly differently) -->
+    <!-- Actually, keeping them separate from the bounce group makes the suspension look better -->
+
+    <!-- Back Wheel -->
+    <g transform="translate(260, 420)">
+        <!-- Shadow/Well -->
+        <path d="M -50 0 A 50 50 0 0 1 50 0 Z" fill="#3a2a32" />
+        <!-- Tire -->
+        <circle cx="0" cy="10" r="40" fill="#3a2a32" />
+        <circle cx="0" cy="10" r="32" fill="#5a4650" />
+        <!-- Rim -->
+        <g transform="translate(0, 10)">
+            <g class="wheel-inner">
+                <circle cx="0" cy="0" r="22" fill="#cc3f30" />
+                <circle cx="0" cy="0" r="15" fill="#a4453b" />
+                <circle cx="0" cy="0" r="8" fill="#f5a41c" />
+                <circle cx="0" cy="0" r="4" fill="#3a2a32" />
+                <!-- Rim details -->
+                <circle cx="0" cy="-12" r="3" fill="#3a2a32" />
+                <circle cx="0" cy="12" r="3" fill="#3a2a32" />
+                <circle cx="-12" cy="0" r="3" fill="#3a2a32" />
+                <circle cx="12" cy="0" r="3" fill="#3a2a32" />
+            </g>
+        </g>
+    </g>
+
+    <!-- Front Wheel (Partially hidden) -->
+    <g transform="translate(480, 420)">
+         <!-- Shadow/Well -->
+         <path d="M -40 0 A 40 40 0 0 1 40 0 Z" fill="#3a2a32" />
+         <!-- Tire -->
+         <circle cx="0" cy="10" r="35" fill="#3a2a32" />
+         <circle cx="0" cy="10" r="28" fill="#5a4650" />
+         <!-- Front Rim -->
+         <g transform="translate(0, 10) scale(0.85)">
+             <g class="wheel-inner">
+                 <circle cx="0" cy="0" r="22" fill="#cc3f30" />
+                 <circle cx="0" cy="0" r="15" fill="#a4453b" />
+                 <circle cx="0" cy="0" r="8" fill="#f5a41c" />
+                 <circle cx="0" cy="0" r="4" fill="#3a2a32" />
+                 <!-- Rim details -->
+                 <circle cx="0" cy="-12" r="3" fill="#3a2a32" />
+                 <circle cx="0" cy="12" r="3" fill="#3a2a32" />
+                 <circle cx="-12" cy="0" r="3" fill="#3a2a32" />
+                 <circle cx="12" cy="0" r="3" fill="#3a2a32" />
+             </g>
+         </g>
+    </g>
+
+
+    <!-- Road and Ground Lines -->
+    <g class="road-lines" stroke="#3a2a32" stroke-width="4" stroke-linecap="round">
+        <!-- Main thick ground line -->
+        <line x1="120" y1="465" x2="680" y2="465" stroke-width="6" />
+
+        <!-- Under-bus shadow line -->
+        <line x1="180" y1="472" x2="630" y2="472" stroke="#68555e" stroke-width="4" />
+
+        <!-- Moving dashed lines for speed effect -->
+        <path d="M 120 485 L 680 485" class="moving-line" />
+        <path d="M 120 495 L 680 495" class="moving-line" stroke-width="3" style="animation-duration: 1.2s; stroke-dasharray: 15 45;"/>
+    </g>
+
+</svg>

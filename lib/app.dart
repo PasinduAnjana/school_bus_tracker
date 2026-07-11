@@ -13,26 +13,28 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'School Bus Tracker',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      home: Consumer<AuthProvider>(
-        builder: (_, auth, _) {
-          if (auth.status == AuthStatus.authenticated) {
-            final user = auth.currentUser!;
-            switch (user.role) {
-              case UserRole.admin:
-                return const AdminShell();
-              case UserRole.driver:
-                return const DriverShell();
-              case UserRole.parent:
-                return const ParentShell();
-            }
-          }
-          return const LoginScreen();
-        },
-      ),
+    return Consumer<AuthProvider>(
+      builder: (_, auth, _) {
+        Widget home;
+        if (auth.status == AuthStatus.authenticated) {
+          final user = auth.currentUser!;
+          home = switch (user.role) {
+            UserRole.admin => const AdminShell(),
+            UserRole.driver => const DriverShell(),
+            UserRole.parent => const ParentShell(),
+          };
+        } else {
+          home = const LoginScreen();
+        }
+
+        return MaterialApp(
+          key: ValueKey(auth.status),
+          title: 'School Bus Tracker',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          home: home,
+        );
+      },
     );
   }
 }

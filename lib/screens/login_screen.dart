@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/phone_utils.dart';
@@ -77,18 +78,11 @@ class _LoginScreenState extends State<LoginScreen>
               child: Column(
                 children: [
                   const Spacer(flex: 3),
-                  Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Icon(
-                      Icons.directions_bus_rounded,
-                      size: 44,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  Lottie.asset(
+                    'assets/animations/login.json',
+                    width: 260,
+                    height: 260,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 28),
                   Text(

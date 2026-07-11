@@ -229,7 +229,30 @@ class _UsersTabState extends State<UsersTab> {
                                 Icons.delete_outline,
                                 color: Theme.of(context).colorScheme.error,
                               ),
-                              onPressed: () => admin.deleteStudent(s.id),
+                              onPressed: () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('Delete student'),
+                                    content: Text('Delete "${s.name}"?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, true),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) {
+                                  admin.deleteStudent(s.id);
+                                }
+                              },
                             ),
                           ),
                         );

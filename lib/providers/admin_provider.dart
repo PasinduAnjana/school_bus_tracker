@@ -493,14 +493,36 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<bool> togglePayment(String paymentId, bool currentValue) async {
+    final newValue = !currentValue;
+    final idx = _payments.indexWhere((p) => p.id == paymentId);
+    if (idx != -1) {
+      _payments[idx] = PaymentWithStudent(
+        id: _payments[idx].id,
+        studentId: _payments[idx].studentId,
+        studentName: _payments[idx].studentName,
+        month: _payments[idx].month,
+        paid: newValue,
+      );
+      notifyListeners();
+    }
+
     try {
       await SupabaseService.client
           .from('payments')
-          .update({'paid': !currentValue})
+          .update({'paid': newValue})
           .eq('id', paymentId);
-      await loadPayments(_selectedMonth);
       return true;
     } catch (e) {
+      if (idx != -1) {
+        _payments[idx] = PaymentWithStudent(
+          id: _payments[idx].id,
+          studentId: _payments[idx].studentId,
+          studentName: _payments[idx].studentName,
+          month: _payments[idx].month,
+          paid: currentValue,
+        );
+        notifyListeners();
+      }
       debugPrint('togglePayment error: $e');
       return false;
     }
