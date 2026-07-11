@@ -28,20 +28,27 @@ class StudentWithParent {
   final String name;
   final String? parentId;
   final String? parentPhone;
+  final String? routeId;
+  final String? routeName;
 
   StudentWithParent({
     required this.id,
     required this.name,
     this.parentId,
     this.parentPhone,
+    this.routeId,
+    this.routeName,
   });
 
   factory StudentWithParent.fromMap(Map<String, dynamic> map) {
+    final route = map['route'] as Map<String, dynamic>?;
     return StudentWithParent(
       id: map['id'] as String,
       name: map['name'] as String,
       parentId: map['parent_id'] as String?,
       parentPhone: map['parent_phone'] as String?,
+      routeId: map['route_id'] as String?,
+      routeName: route?['name'] as String?,
     );
   }
 }
@@ -173,19 +180,10 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('students')
           .select(
-            'id, name, parent_id, parent:users_whitelist!parent_id(phone_number)',
+            'id, name, parent_id, route_id, parent:users_whitelist!parent_id(phone_number), route:routes!route_id(name)',
           )
           .order('name');
-      _students = (data as List).map((e) {
-        final map = e as Map<String, dynamic>;
-        final parent = map['parent'] as Map<String, dynamic>?;
-        return StudentWithParent(
-          id: map['id'] as String,
-          name: map['name'] as String,
-          parentId: map['parent_id'] as String?,
-          parentPhone: parent?['phone_number'] as String?,
-        );
-      }).toList();
+      _students = (data as List).map((e) => StudentWithParent.fromMap(e)).toList();
     } catch (e) {
       debugPrint('loadStudents error: $e');
     }
@@ -205,8 +203,9 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> addStudentWithParent(
     String studentName,
     String parentPhone,
-    String? parentName,
-  ) async {
+    String? parentName, {
+    String? routeId,
+  }) async {
     try {
       final normalizedPhone = formatE164(parentPhone);
       var parent = findUserByPhone(normalizedPhone);
@@ -224,6 +223,7 @@ class AdminProvider extends ChangeNotifier {
       await SupabaseService.client.from('students').insert({
         'name': studentName,
         'parent_id': parent.id,
+        'route_id': routeId,
       });
       await loadStudents();
       return true;
@@ -240,6 +240,20 @@ class AdminProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('deleteStudent error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateStudentRoute(String studentId, String? routeId) async {
+    try {
+      await SupabaseService.client
+          .from('students')
+          .update({'route_id': routeId})
+          .eq('id', studentId);
+      await loadStudents();
+      return true;
+    } catch (e) {
+      debugPrint('updateStudentRoute error: $e');
       return false;
     }
   }

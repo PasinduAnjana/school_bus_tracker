@@ -17,6 +17,7 @@ class _UsersTabState extends State<UsersTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminProvider>().loadUsers();
       context.read<AdminProvider>().loadStudents();
+      context.read<AdminProvider>().loadRoutes();
     });
   }
 
@@ -25,14 +26,16 @@ class _UsersTabState extends State<UsersTab> {
     final phoneCtrl = TextEditingController();
     final parentNameCtrl = TextEditingController();
     var showParentName = false;
+    String? selectedRouteId;
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
+            final admin = context.read<AdminProvider>();
+
             void onPhoneChanged(String value) {
-              final admin = context.read<AdminProvider>();
               final exists = value.trim().isNotEmpty &&
                   admin.findUserByPhone(value.trim()) != null;
               final show = value.trim().isNotEmpty && !exists;
@@ -92,6 +95,27 @@ class _UsersTabState extends State<UsersTab> {
                               ),
                         ),
                       ],
+                      const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: selectedRouteId,
+                decoration: const InputDecoration(
+                  labelText: 'Select bus',
+                ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('None'),
+                          ),
+                          ...admin.routes.map(
+                            (r) => DropdownMenuItem(
+                              value: r.id,
+                              child: Text(r.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) =>
+                            setDialogState(() => selectedRouteId = v),
+                      ),
                     ],
                   ),
                 ),
@@ -137,7 +161,61 @@ class _UsersTabState extends State<UsersTab> {
     if (!mounted) return;
     await context
         .read<AdminProvider>()
-        .addStudentWithParent(name, phone, parentName);
+        .addStudentWithParent(name, phone, parentName, routeId: selectedRouteId);
+  }
+
+  Future<void> _showChangeBusDialog(StudentWithParent s) async {
+    String? selectedRouteId = s.routeId;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final admin = context.read<AdminProvider>();
+            return AlertDialog(
+              title: const Text('Change Bus'),
+              content: DropdownButtonFormField<String>(
+                initialValue: selectedRouteId,
+                decoration: const InputDecoration(
+                  labelText: 'Select bus',
+                ),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('None'),
+                  ),
+                  ...admin.routes.map(
+                    (r) => DropdownMenuItem(
+                      value: r.id,
+                      child: Text(r.name),
+                    ),
+                  ),
+                ],
+                onChanged: (v) =>
+                    setDialogState(() => selectedRouteId = v),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (ok != true) return;
+    if (!mounted) return;
+    await context
+        .read<AdminProvider>()
+        .updateStudentRoute(s.id, selectedRouteId);
   }
 
   @override
@@ -217,42 +295,57 @@ class _UsersTabState extends State<UsersTab> {
                               ),
                             ),
                             subtitle: Text(
-                              s.parentPhone ?? 'No parent',
+                              s.routeName != null
+                                  ? 'Bus: ${s.routeName}'
+                                  : (s.parentPhone ?? 'No parent'),
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurfaceVariant,
                               ),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.delete_outline,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              onPressed: () async {
-                                final ok = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('Delete student'),
-                                    content: Text('Delete "${s.name}"?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, true),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.directions_bus_outlined),
+                                  tooltip: 'Change bus',
+                                  onPressed: () => _showChangeBusDialog(s),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color:
+                                        Theme.of(context).colorScheme.error,
                                   ),
-                                );
-                                if (ok == true) {
-                                  admin.deleteStudent(s.id);
-                                }
-                              },
+                                  onPressed: () async {
+                                    final ok = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title:
+                                            const Text('Delete student'),
+                                        content:
+                                            Text('Delete "${s.name}"?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, true),
+                                            child: const Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (ok == true) {
+                                      admin.deleteStudent(s.id);
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
