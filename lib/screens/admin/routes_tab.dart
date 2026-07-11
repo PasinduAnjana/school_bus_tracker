@@ -48,8 +48,10 @@ class _RoutesTabState extends State<RoutesTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Create Route',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Create Route',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _nameCtrl,
@@ -80,56 +82,56 @@ class _RoutesTabState extends State<RoutesTab> {
               ),
             )
           else
-            ...admin.routes.map((r) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.route),
-                    title: Text(r.name),
-                    subtitle: Text(r.driverPhone ?? 'No driver assigned'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: Color(0xFFFF5252)),
-                          onPressed: () async {
-                            final ok = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Delete route'),
-                                content: Text('Delete "${r.name}"?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, false),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, true),
-                                    child: const Text('Delete'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (ok == true) {
-                              await admin.deleteRoute(r.id);
-                            }
-                          },
+            ...admin.routes.map(
+              (r) => Card(
+                child: ListTile(
+                  leading: const Icon(Icons.route),
+                  title: Text(r.name),
+                  subtitle: Text(r.driverPhone ?? 'No driver assigned'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Color(0xFFFF5252),
                         ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RouteDetailScreen(
-                          routeId: r.id,
-                          routeName: r.name,
-                        ),
+                        onPressed: () async {
+                          final ok = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Delete route'),
+                              content: Text('Delete "${r.name}"?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (ok == true) {
+                            await admin.deleteRoute(r.id);
+                          }
+                        },
                       ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          RouteDetailScreen(routeId: r.id, routeName: r.name),
                     ),
                   ),
-                )),
+                ),
+              ),
+            ),
         ],
       ),
     );

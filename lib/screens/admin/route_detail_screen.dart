@@ -72,9 +72,11 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 const SizedBox(height: 8),
                 ListTile(
                   leading: const Icon(Icons.location_on),
-                  title: Text(location != null
-                      ? '${location!.latitude.toStringAsFixed(4)}, ${location!.longitude.toStringAsFixed(4)}'
-                      : 'Pick on map'),
+                  title: Text(
+                    location != null
+                        ? '${location!.latitude.toStringAsFixed(4)}, ${location!.longitude.toStringAsFixed(4)}'
+                        : 'Pick on map',
+                  ),
                   trailing: const Icon(Icons.map),
                   onTap: () async {
                     final admin = context.read<AdminProvider>();
@@ -117,12 +119,12 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       final timeStr =
           '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       await context.read<AdminProvider>().addHalt(
-            widget.routeId,
-            nameCtrl.text.trim(),
-            timeStr,
-            latitude: location?.latitude,
-            longitude: location?.longitude,
-          );
+        widget.routeId,
+        nameCtrl.text.trim(),
+        timeStr,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      );
     }
   }
 
@@ -167,9 +169,11 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 const SizedBox(height: 8),
                 ListTile(
                   leading: const Icon(Icons.location_on),
-                  title: Text(location != null
-                      ? '${location!.latitude.toStringAsFixed(4)}, ${location!.longitude.toStringAsFixed(4)}'
-                      : 'Pick on map'),
+                  title: Text(
+                    location != null
+                        ? '${location!.latitude.toStringAsFixed(4)}, ${location!.longitude.toStringAsFixed(4)}'
+                        : 'Pick on map',
+                  ),
                   trailing: const Icon(Icons.map),
                   onTap: () async {
                     final admin = context.read<AdminProvider>();
@@ -212,12 +216,12 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       final timeStr =
           '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       await context.read<AdminProvider>().updateHalt(
-            halt.id,
-            nameCtrl.text.trim(),
-            timeStr,
-            latitude: location?.latitude,
-            longitude: location?.longitude,
-          );
+        halt.id,
+        nameCtrl.text.trim(),
+        timeStr,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      );
     }
   }
 
@@ -239,16 +243,22 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Assign Driver',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Assign Driver',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   key: ValueKey('driver_$_selectedDriverId'),
                   initialValue: _selectedDriverId,
                   decoration: const InputDecoration(labelText: 'Driver'),
                   items: admin.drivers
-                      .map((d) => DropdownMenuItem(
-                          value: d.id, child: Text(d.phoneNumber)))
+                      .map(
+                        (d) => DropdownMenuItem(
+                          value: d.id,
+                          child: Text(d.phoneNumber),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) {
                     setState(() => _selectedDriverId = v);
@@ -280,7 +290,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 final moved = items.removeAt(from);
                 items.insert(to, moved);
                 admin.reorderHalts(
-                    widget.routeId, items.map((h) => h.id).toList());
+                  widget.routeId,
+                  items.map((h) => h.id).toList(),
+                );
               },
               itemBuilder: (_, i) {
                 final halt = halts[i];
@@ -296,11 +308,13 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         CircleAvatar(
-                          backgroundColor:
-                              const Color(0xFFFFD700).withValues(alpha: 0.2),
-                          child: Text('${halt.stopOrder + 1}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
+                          backgroundColor: const Color(
+                            0xFFFFD700,
+                          ).withValues(alpha: 0.2),
+                          child: Text(
+                            '${halt.stopOrder + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -317,8 +331,10 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                       ],
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: Color(0xFFFF5252)),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Color(0xFFFF5252),
+                      ),
                       onPressed: () => admin.deleteHalt(halt.id),
                     ),
                     onTap: () => _editHalt(halt),

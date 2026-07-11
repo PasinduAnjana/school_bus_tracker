@@ -24,9 +24,7 @@ class FrostedCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: child,
         ),

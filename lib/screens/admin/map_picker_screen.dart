@@ -46,9 +46,21 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   }
 
   static final _streetTypes = {
-    'residential', 'secondary', 'primary', 'tertiary', 'unclassified',
-    'road', 'service', 'footway', 'path', 'cycleway', 'track',
-    'motorway', 'trunk', 'living_street', 'pedestrian',
+    'residential',
+    'secondary',
+    'primary',
+    'tertiary',
+    'unclassified',
+    'road',
+    'service',
+    'footway',
+    'path',
+    'cycleway',
+    'track',
+    'motorway',
+    'trunk',
+    'living_street',
+    'pedestrian',
   };
 
   Future<void> _search(String query) async {
@@ -59,10 +71,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
     setState(() => _searching = true);
     try {
       final url = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=10&countrycodes=lk');
-      final resp = await http.get(url, headers: {
-        'User-Agent': 'school_bus_tracker/1.0',
-      });
+        'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=10&countrycodes=lk',
+      );
+      final resp = await http.get(
+        url,
+        headers: {'User-Agent': 'school_bus_tracker/1.0'},
+      );
       if (resp.statusCode == 200) {
         final list = json.decode(resp.body) as List;
         final all = list.cast<Map<String, dynamic>>();
@@ -71,7 +85,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           final bIsStreet = _streetTypes.contains(b['type'] as String?);
           if (aIsStreet && !bIsStreet) return 1;
           if (!aIsStreet && bIsStreet) return -1;
-          return (b['importance'] as num?)?.compareTo(a['importance'] as num? ?? 0) ?? 0;
+          return (b['importance'] as num?)?.compareTo(
+                a['importance'] as num? ?? 0,
+              ) ??
+              0;
         });
         setState(() => _results = all.take(5).toList());
       }
@@ -102,16 +119,18 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   Widget build(BuildContext context) {
     final existingMarkers = widget.existingHalts
         .where((h) => h.latitude != null && h.longitude != null)
-        .map((h) => Marker(
-              point: LatLng(h.latitude!, h.longitude!),
-              width: 120,
-              height: 60,
-              child: MapPin(
-                label: h.name,
-                color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                size: 32,
-              ),
-            ))
+        .map(
+          (h) => Marker(
+            point: LatLng(h.latitude!, h.longitude!),
+            width: 120,
+            height: 60,
+            child: MapPin(
+              label: h.name,
+              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+              size: 32,
+            ),
+          ),
+        )
         .toList();
 
     return Scaffold(
@@ -188,7 +207,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                 ),
                 if (_results.isNotEmpty)
@@ -199,9 +220,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4)),
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: ListView.separated(
@@ -212,11 +234,15 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         final r = _results[i];
                         return ListTile(
                           dense: true,
-                          leading:
-                              const Icon(Icons.place, color: Color(0xFFFFD700)),
-                          title: Text(r['display_name'] as String,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                          leading: const Icon(
+                            Icons.place,
+                            color: Color(0xFFFFD700),
+                          ),
+                          title: Text(
+                            r['display_name'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           onTap: () => _goToResult(r),
                         );
                       },

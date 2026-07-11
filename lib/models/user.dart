@@ -5,11 +5,7 @@ class AppUser {
   final String phoneNumber;
   final UserRole role;
 
-  AppUser({
-    required this.id,
-    required this.phoneNumber,
-    required this.role,
-  });
+  AppUser({required this.id, required this.phoneNumber, required this.role});
 
   factory AppUser.fromMap(Map<String, dynamic> map) {
     return AppUser(

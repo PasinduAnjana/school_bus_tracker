@@ -49,8 +49,10 @@ class _DriversTabState extends State<DriversTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Add Driver',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Add Driver',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _phoneController,
@@ -86,20 +88,23 @@ class _DriversTabState extends State<DriversTab> {
               ),
             )
           else
-            ...admin.drivers.map((d) => Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                      child: const Text('D'),
-                    ),
-                    title: Text(d.phoneNumber),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => admin.deleteUser(d.id),
-                    ),
+            ...admin.drivers.map(
+              (d) => Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    child: const Text('D'),
                   ),
-                )),
+                  title: Text(d.phoneNumber),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () => admin.deleteUser(d.id),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

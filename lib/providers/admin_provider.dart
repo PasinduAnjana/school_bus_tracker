@@ -115,8 +115,7 @@ class AdminProvider extends ChangeNotifier {
   String get selectedMonth => _selectedMonth;
   bool get isLoading => _isLoading;
 
-  List<Halt> halts(String routeId) =>
-      _haltsByRoute[routeId] ?? [];
+  List<Halt> halts(String routeId) => _haltsByRoute[routeId] ?? [];
 
   static String currentMonth() {
     final now = DateTime.now();
@@ -173,7 +172,9 @@ class AdminProvider extends ChangeNotifier {
     try {
       final data = await SupabaseService.client
           .from('students')
-          .select('id, name, parent_id, parent:users_whitelist!parent_id(phone_number)')
+          .select(
+            'id, name, parent_id, parent:users_whitelist!parent_id(phone_number)',
+          )
           .order('name');
       _students = (data as List).map((e) {
         final map = e as Map<String, dynamic>;
@@ -202,7 +203,10 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<bool> addStudentWithParent(
-      String studentName, String parentPhone, String? parentName) async {
+    String studentName,
+    String parentPhone,
+    String? parentName,
+  ) async {
     try {
       final normalizedPhone = formatE164(parentPhone);
       var parent = findUserByPhone(normalizedPhone);
@@ -231,10 +235,7 @@ class AdminProvider extends ChangeNotifier {
 
   Future<bool> deleteStudent(String id) async {
     try {
-      await SupabaseService.client
-          .from('students')
-          .delete()
-          .eq('id', id);
+      await SupabaseService.client.from('students').delete().eq('id', id);
       await loadStudents();
       return true;
     } catch (e) {
@@ -249,7 +250,9 @@ class AdminProvider extends ChangeNotifier {
     try {
       final data = await SupabaseService.client
           .from('routes')
-          .select('id, name, driver_id, driver:users_whitelist!driver_id(phone_number)')
+          .select(
+            'id, name, driver_id, driver:users_whitelist!driver_id(phone_number)',
+          )
           .order('name');
       _routes = (data as List).map((e) {
         final map = e as Map<String, dynamic>;
@@ -311,8 +314,9 @@ class AdminProvider extends ChangeNotifier {
           .select('*')
           .eq('route_id', routeId)
           .order('stop_order');
-      _haltsByRoute[routeId] =
-          (data as List).map((e) => Halt.fromMap(e)).toList();
+      _haltsByRoute[routeId] = (data as List)
+          .map((e) => Halt.fromMap(e))
+          .toList();
       notifyListeners();
     } catch (e) {
       debugPrint('loadHalts error: $e');
@@ -320,8 +324,12 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<bool> addHalt(
-      String routeId, String name, String arrivalTime,
-      {double? latitude, double? longitude}) async {
+    String routeId,
+    String name,
+    String arrivalTime, {
+    double? latitude,
+    double? longitude,
+  }) async {
     try {
       final halts = _haltsByRoute[routeId] ?? [];
       await SupabaseService.client.from('halts').insert({
@@ -341,17 +349,22 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<bool> updateHalt(
-      String haltId,
-      String name,
-      String arrivalTime,
-      {double? latitude, double? longitude}) async {
+    String haltId,
+    String name,
+    String arrivalTime, {
+    double? latitude,
+    double? longitude,
+  }) async {
     try {
-      await SupabaseService.client.from('halts').update({
-        'name': name,
-        'arrival_time': arrivalTime,
-        'latitude': latitude,
-        'longitude': longitude,
-      }).eq('id', haltId);
+      await SupabaseService.client
+          .from('halts')
+          .update({
+            'name': name,
+            'arrival_time': arrivalTime,
+            'latitude': latitude,
+            'longitude': longitude,
+          })
+          .eq('id', haltId);
       final routeId = _haltsByRoute.entries
           .firstWhere((e) => e.value.any((h) => h.id == haltId))
           .key;
@@ -365,12 +378,10 @@ class AdminProvider extends ChangeNotifier {
 
   Future<bool> deleteHalt(String haltId) async {
     try {
-      final entry = _haltsByRoute.entries
-          .firstWhere((e) => e.value.any((h) => h.id == haltId));
-      await SupabaseService.client
-          .from('halts')
-          .delete()
-          .eq('id', haltId);
+      final entry = _haltsByRoute.entries.firstWhere(
+        (e) => e.value.any((h) => h.id == haltId),
+      );
+      await SupabaseService.client.from('halts').delete().eq('id', haltId);
       await loadHalts(entry.key);
       return true;
     } catch (e) {
@@ -383,7 +394,9 @@ class AdminProvider extends ChangeNotifier {
     try {
       final existing = _haltsByRoute[routeId];
       if (existing == null) return;
-      final reordered = haltIds.map((id) => existing.firstWhere((h) => h.id == id)).toList();
+      final reordered = haltIds
+          .map((id) => existing.firstWhere((h) => h.id == id))
+          .toList();
       for (var i = 0; i < reordered.length; i++) {
         reordered[i] = Halt(
           id: reordered[i].id,
@@ -417,7 +430,9 @@ class AdminProvider extends ChangeNotifier {
     try {
       final payments = await SupabaseService.client
           .from('payments')
-          .select('id, student_id, month, paid, student:students!student_id(name)')
+          .select(
+            'id, student_id, month, paid, student:students!student_id(name)',
+          )
           .eq('month', month)
           .order('student_id');
       _payments = (payments as List).map((e) {
@@ -459,7 +474,9 @@ class AdminProvider extends ChangeNotifier {
   Future<void> _reloadPayments(String month) async {
     final data = await SupabaseService.client
         .from('payments')
-        .select('id, student_id, month, paid, student:students!student_id(name)')
+        .select(
+          'id, student_id, month, paid, student:students!student_id(name)',
+        )
         .eq('month', month)
         .order('student_id');
     _payments = (data as List).map((e) {

@@ -42,16 +42,16 @@ class _PaymentsTabState extends State<PaymentsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Filter by month',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Filter by month',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedMonth,
                   decoration: const InputDecoration(labelText: 'Month'),
                   items: _months
-                      .map((m) => DropdownMenuItem(
-                          value: m,
-                          child: Text(m)))
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) {
                     if (v == null) return;
@@ -73,28 +73,29 @@ class _PaymentsTabState extends State<PaymentsTab> {
               ),
             )
           else
-            ...admin.payments.map((p) => Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: p.paid
-                          ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
-                          : const Color(0xFFFF5252).withValues(alpha: 0.15),
-                      child: Icon(
-                        p.paid ? Icons.check : Icons.close,
-                        color: p.paid
-                            ? const Color(0xFF4CAF50)
-                            : const Color(0xFFFF5252),
-                      ),
-                    ),
-                    title: Text(p.studentName),
-                    trailing: Switch.adaptive(
-                      value: p.paid,
-                      activeTrackColor: const Color(0xFF4CAF50),
-                      onChanged: (_) =>
-                          admin.togglePayment(p.id, p.paid),
+            ...admin.payments.map(
+              (p) => Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: p.paid
+                        ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
+                        : const Color(0xFFFF5252).withValues(alpha: 0.15),
+                    child: Icon(
+                      p.paid ? Icons.check : Icons.close,
+                      color: p.paid
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFFF5252),
                     ),
                   ),
-                )),
+                  title: Text(p.studentName),
+                  trailing: Switch.adaptive(
+                    value: p.paid,
+                    activeTrackColor: const Color(0xFF4CAF50),
+                    onChanged: (_) => admin.togglePayment(p.id, p.paid),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

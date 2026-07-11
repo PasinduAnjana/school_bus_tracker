@@ -103,9 +103,8 @@ class _ParentShellState extends State<ParentShell> {
                         const Spacer(),
                         Text(
                           'ETA: 12 min',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

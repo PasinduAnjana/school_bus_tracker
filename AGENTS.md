@@ -20,24 +20,10 @@ Flutter app (Dart, multi-platform). Three roles (Admin, Driver, Parent) determin
 - **Auth uses Supabase Auth phone OTP** — `signInWithOtp()` / `verifyOTP()` manage session automatically. RLS policies (`auth.role() = 'authenticated'`) work because the user has a real JWT after verification.
 - **Custom SMS provider (Text.lk)** — a Supabase Auth Hook forwards OTPs to Text.lk via the `textlk-sms` Edge Function (source: `supabase/functions/textlk-sms/index.ts`).
 - **Phone number format**: Supabase Auth strips the `+` prefix from returned phone numbers. The app normalises it before whitelist lookups. The utility `lib/utils/phone_utils.dart` (`formatE164`) converts Sri Lankan numbers to `+94` format (strips non-digits, prepends `+94`).
+- **Background service for swipe-away survival**: Uses `flutter_background_service` with a foreground service type `location` to survive app swipe-away on Android 12+. The background isolate (`lib/services/background_service.dart`) runs a `Completer<void>().future` loop and independently pings GPS + Supabase every 20s — location uploads continue even after the app is swiped away. The main isolate also pings simultaneously when the app is in the foreground (keeps UI in sync). No `DartPluginRegistrant` needed — the background FlutterEngine auto-registers all plugins, so `location` & `http` work natively.
 - **Dev bypass**: setup.sh mentions `0770000000` / code `4592` for testing without SMS. The old `dev_bypass.dart` has been removed — bypass is handled directly in phone formatting logic.
 - **seed.sql** (`supabase/seed.sql`) — sample data INSERTs are **commented out** by default. Uncomment before running `supabase db reset` or paste into dashboard SQL Editor.
 - **Only 1 test** exists (`test/widget_test.dart`) — a basic widget smoke test. No integration test infrastructure.
-
-## Structure
-
-- `lib/main.dart` — entrypoint, initializes `flutter_dotenv`, `SupabaseService.init()`, then `MultiProvider` (AuthProvider, AdminProvider, DriverProvider, MonitorProvider)
-- `lib/app.dart` — MaterialApp with role-based routing: `AuthStatus.authenticated` routes to AdminShell / DriverShell / ParentShell by `UserRole`; else LoginScreen
-- `lib/services/supabase_client.dart` — `SupabaseService` singleton wrapping `Supabase.initialize()`
-- `lib/utils/phone_utils.dart` — `formatE164()` Sri Lanka phone normalization
-- `lib/config/` — `app_theme.dart` (yellow `#FFD700` palette, Material 3), `supabase_config.dart` (reads from `.env` via `flutter_dotenv`)
-- `lib/models/` — `user.dart`, `route_model.dart`, `student.dart`, `payment.dart`, `gps_location.dart`, `halt.dart`
-- `lib/providers/` — `auth_provider.dart` (phone → OTP → role lookup), `admin_provider.dart`, `driver_provider.dart`, `monitor_provider.dart` (live trip/halt monitoring)
-- `lib/screens/` — `login_screen.dart`, `otp_screen.dart`, `admin/` (shell with **5 tabs**: Students, Drivers, Payments, Routes, Monitor), `driver/`, `parent/`
-- `lib/widgets/` — `squishy_button.dart`, `frosted_card.dart`, `otp_field.dart`, `map_pin.dart`
-- `lib/design.md` — visual design spec (colors, animations, glassmorphism, SVG asset list)
-- `supabase/` — migrations (7 files: schema, RLS, halts, trip_halts); Edge Functions (`textlk-sms` active, `send-otp`/`verify-otp` legacy); `setup.sh`; `seed.sql`; `config.toml`
-- `.env` is registered as a Flutter asset in `pubspec.yaml` (line 70)
 
 ## Migrating to a new Supabase project
 

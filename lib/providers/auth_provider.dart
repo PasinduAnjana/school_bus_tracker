@@ -61,9 +61,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SupabaseService.client.auth.signInWithOtp(
-        phone: _phoneNumber,
-      );
+      await SupabaseService.client.auth.signInWithOtp(phone: _phoneNumber);
       return true;
     } catch (e) {
       debugPrint('sendOtp error: $e');

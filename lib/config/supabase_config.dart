@@ -6,6 +6,5 @@ class SupabaseConfig {
   static String get supabaseUrl =>
       dotenv.env['SUPABASE_URL'] ?? 'https://your-project-id.supabase.co';
 
-  static String get anonKey =>
-      dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
 }

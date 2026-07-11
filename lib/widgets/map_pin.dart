@@ -27,13 +27,16 @@ class MapPin extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 2),
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 2,
+                ),
               ],
             ),
-            child: Text(label!,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 11)),
+            child: Text(
+              label!,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11),
+            ),
           ),
         Container(
           width: size,
@@ -44,13 +47,17 @@ class MapPin extends StatelessWidget {
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2)),
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
-          child: Icon(Icons.directions_bus,
-              color: Colors.white, size: iconSize),
+          child: Icon(
+            Icons.directions_bus,
+            color: Colors.white,
+            size: iconSize,
+          ),
         ),
       ],
     );

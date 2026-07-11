@@ -26,4 +26,12 @@ class LocationService {
       return null;
     }
   }
+
+  static Future<bool> enableBackgroundMode({required bool enable}) async {
+    try {
+      return await _location.enableBackgroundMode(enable: enable);
+    } catch (_) {
+      return false;
+    }
+  }
 }

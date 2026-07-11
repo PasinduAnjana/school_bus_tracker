@@ -25,8 +25,7 @@ class ActiveTrip {
     required this.recordedAt,
   });
 
-  bool get isStale =>
-      DateTime.now().difference(recordedAt).inMinutes > 2;
+  bool get isStale => DateTime.now().difference(recordedAt).inMinutes > 2;
 
   factory ActiveTrip.fromMap(Map<String, dynamic> map) {
     final route = map['route'] as Map<String, dynamic>?;
@@ -58,8 +57,10 @@ class MonitorProvider extends ChangeNotifier {
     try {
       final data = await SupabaseService.client
           .from('live_locations')
-          .select('id, route_id, driver_id, latitude, longitude, recorded_at, '
-              'route:routes(name), driver:users_whitelist(phone_number)')
+          .select(
+            'id, route_id, driver_id, latitude, longitude, recorded_at, '
+            'route:routes(name), driver:users_whitelist(phone_number)',
+          )
           .eq('trip_active', true)
           .order('recorded_at', ascending: false);
       _activeTrips = (data as List)

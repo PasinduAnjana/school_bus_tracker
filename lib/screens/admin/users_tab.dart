@@ -36,8 +36,8 @@ class _UsersTabState extends State<UsersTab> {
 
   void _onParentPhoneChanged(String value) {
     final admin = context.read<AdminProvider>();
-    final exists = value.trim().isNotEmpty &&
-        admin.findUserByPhone(value.trim()) != null;
+    final exists =
+        value.trim().isNotEmpty && admin.findUserByPhone(value.trim()) != null;
     final showName = value.trim().isNotEmpty && !exists;
     if (showName != _showParentName) {
       setState(() => _showParentName = showName);
@@ -78,8 +78,10 @@ class _UsersTabState extends State<UsersTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Add Student',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Add Student',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _studentNameController,
@@ -116,10 +118,8 @@ class _UsersTabState extends State<UsersTab> {
                   Text(
                     'Parent already registered',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary,
-                        ),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -146,17 +146,19 @@ class _UsersTabState extends State<UsersTab> {
               ),
             )
           else
-            ...admin.students.map((s) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.school),
-                    title: Text(s.name),
-                    subtitle: Text(s.parentPhone ?? 'No parent'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => admin.deleteStudent(s.id),
-                    ),
+            ...admin.students.map(
+              (s) => Card(
+                child: ListTile(
+                  leading: const Icon(Icons.school),
+                  title: Text(s.name),
+                  subtitle: Text(s.parentPhone ?? 'No parent'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () => admin.deleteStudent(s.id),
                   ),
-                )),
+                ),
+              ),
+            ),
         ],
       ),
     );

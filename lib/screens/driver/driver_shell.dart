@@ -29,7 +29,9 @@ class _DriverShellState extends State<DriverShell> {
       if (driver.resumed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Trip restored — app was closed while trip was active'),
+            content: Text(
+              'Trip restored — app was closed while trip was active',
+            ),
           ),
         );
       }
@@ -43,10 +45,7 @@ class _DriverShellState extends State<DriverShell> {
     if (driver.currentLat != null && !_centeredOnce) {
       _centeredOnce = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _mapController.move(
-          LatLng(driver.currentLat!, driver.currentLng!),
-          16,
-        );
+        _mapController.move(LatLng(driver.currentLat!, driver.currentLng!), 16);
       });
     }
 
@@ -82,14 +81,15 @@ class _DriverShellState extends State<DriverShell> {
                           'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                       retinaMode: true,
                     ),
-                    if (driver.currentLat != null &&
-                        driver.currentLng != null)
+                    if (driver.currentLat != null && driver.currentLng != null)
                       MarkerLayer(
                         markers: [
                           // Driver bus marker
                           Marker(
                             point: LatLng(
-                                driver.currentLat!, driver.currentLng!),
+                              driver.currentLat!,
+                              driver.currentLng!,
+                            ),
                             width: 40,
                             height: 40,
                             child: Icon(
@@ -100,11 +100,9 @@ class _DriverShellState extends State<DriverShell> {
                           ),
                           // Halt markers
                           for (final halt in driver.halts)
-                            if (halt.latitude != null &&
-                                halt.longitude != null)
+                            if (halt.latitude != null && halt.longitude != null)
                               Marker(
-                                point:
-                                    LatLng(halt.latitude!, halt.longitude!),
+                                point: LatLng(halt.latitude!, halt.longitude!),
                                 width: 36,
                                 height: 44,
                                 child: Column(
@@ -112,15 +110,17 @@ class _DriverShellState extends State<DriverShell> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: driver
-                                                .completedHalts
-                                                .contains(halt.id)
+                                        color:
+                                            driver.completedHalts.contains(
+                                              halt.id,
+                                            )
                                             ? const Color(0xFF4CAF50)
                                             : const Color(0xFF1E1E1E),
-                                        borderRadius:
-                                            BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
                                         '${halt.stopOrder + 1}',
@@ -131,8 +131,11 @@ class _DriverShellState extends State<DriverShell> {
                                         ),
                                       ),
                                     ),
-                                    const Icon(Icons.location_on,
-                                        color: Color(0xFFFF5252), size: 20),
+                                    const Icon(
+                                      Icons.location_on,
+                                      color: Color(0xFFFF5252),
+                                      size: 20,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -145,8 +148,10 @@ class _DriverShellState extends State<DriverShell> {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: driver.tripActive
                           ? const Color(0xFF4CAF50)
@@ -156,7 +161,11 @@ class _DriverShellState extends State<DriverShell> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.gps_fixed, size: 14, color: Colors.white),
+                        const Icon(
+                          Icons.gps_fixed,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           driver.tripActive ? 'LIVE' : 'GPS',
@@ -175,7 +184,9 @@ class _DriverShellState extends State<DriverShell> {
                     left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(12),
@@ -204,12 +215,16 @@ class _DriverShellState extends State<DriverShell> {
                   else ...[
                     if (driver.routes.length > 1)
                       DropdownButtonFormField<String>(
-                        decoration:
-                            const InputDecoration(labelText: 'Select route'),
+                        decoration: const InputDecoration(
+                          labelText: 'Select route',
+                        ),
                         items: driver.routes
-                            .map((r) => DropdownMenuItem(
+                            .map(
+                              (r) => DropdownMenuItem(
                                 value: r['id'] as String,
-                                child: Text(r['name'] as String)))
+                                child: Text(r['name'] as String),
+                              ),
+                            )
                             .toList(),
                         onChanged: driver.tripActive
                             ? null
@@ -222,8 +237,9 @@ class _DriverShellState extends State<DriverShell> {
                       Expanded(
                         child: ListView(
                           children: driver.halts.map((halt) {
-                            final done =
-                                driver.completedHalts.contains(halt.id);
+                            final done = driver.completedHalts.contains(
+                              halt.id,
+                            );
                             return Card(
                               child: ListTile(
                                 dense: true,
@@ -231,8 +247,9 @@ class _DriverShellState extends State<DriverShell> {
                                   radius: 14,
                                   backgroundColor: done
                                       ? const Color(0xFF4CAF50)
-                                      : const Color(0xFFFFD700)
-                                          .withValues(alpha: 0.3),
+                                      : const Color(
+                                          0xFFFFD700,
+                                        ).withValues(alpha: 0.3),
                                   child: Text(
                                     '${halt.stopOrder + 1}',
                                     style: TextStyle(
@@ -242,16 +259,25 @@ class _DriverShellState extends State<DriverShell> {
                                     ),
                                   ),
                                 ),
-                                title: Text(halt.name, style: const TextStyle(fontSize: 14)),
-                                subtitle: Text('Arrival: ${halt.arrivalTime}',
-                                    style: const TextStyle(fontSize: 12)),
+                                title: Text(
+                                  halt.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                subtitle: Text(
+                                  'Arrival: ${halt.arrivalTime}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                                 trailing: done
-                                    ? const Icon(Icons.check_circle,
-                                        color: Color(0xFF4CAF50), size: 20)
+                                    ? const Icon(
+                                        Icons.check_circle,
+                                        color: Color(0xFF4CAF50),
+                                        size: 20,
+                                      )
                                     : IconButton(
                                         icon: const Icon(
-                                            Icons.check_circle_outline,
-                                            size: 20),
+                                          Icons.check_circle_outline,
+                                          size: 20,
+                                        ),
                                         onPressed: () =>
                                             driver.toggleHalt(halt.id),
                                       ),
@@ -266,10 +292,7 @@ class _DriverShellState extends State<DriverShell> {
                   if (!driver.gpsReady && !driver.tripActive)
                     const Text(
                       'Enable GPS to start a trip',
-                      style: TextStyle(
-                        color: Color(0xFFFF5252),
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Color(0xFFFF5252), fontSize: 12),
                     ),
                   SquishyButton(
                     label: driver.tripActive ? 'STOP TRIP' : 'START TRIP',
@@ -284,7 +307,8 @@ class _DriverShellState extends State<DriverShell> {
                               driver.stopTrip();
                             } else {
                               driver.startTrip(
-                                  context.read<AuthProvider>().currentUser!.id);
+                                context.read<AuthProvider>().currentUser!.id,
+                              );
                             }
                           },
                   ),

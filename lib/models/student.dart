@@ -4,12 +4,7 @@ class Student {
   final String? parentId;
   final String? routeId;
 
-  Student({
-    required this.id,
-    required this.name,
-    this.parentId,
-    this.routeId,
-  });
+  Student({required this.id, required this.name, this.parentId, this.routeId});
 
   factory Student.fromMap(Map<String, dynamic> map) {
     return Student(

@@ -55,19 +55,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 'School Bus\nTracker',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Enter your phone number to continue',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
               const Spacer(),
               TextField(

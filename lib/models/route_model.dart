@@ -3,11 +3,7 @@ class BusRoute {
   final String name;
   final String? driverId;
 
-  BusRoute({
-    required this.id,
-    required this.name,
-    this.driverId,
-  });
+  BusRoute({required this.id, required this.name, this.driverId});
 
   factory BusRoute.fromMap(Map<String, dynamic> map) {
     return BusRoute(

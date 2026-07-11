@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import '../config/supabase_config.dart';
 import '../models/halt.dart';
 import '../services/location_service.dart';
+import '../services/notification_service.dart';
 import '../services/supabase_client.dart';
 
 class DriverProvider extends ChangeNotifier {
@@ -32,8 +35,8 @@ class DriverProvider extends ChangeNotifier {
   String? get selectedRouteName {
     if (_selectedRouteId == null) return null;
     try {
-      return _routes
-          .firstWhere((r) => r['id'] == _selectedRouteId)['name'] as String;
+      return _routes.firstWhere((r) => r['id'] == _selectedRouteId)['name']
+          as String;
     } catch (_) {
       return null;
     }
@@ -101,12 +104,15 @@ class DriverProvider extends ChangeNotifier {
       _resumed = true;
 
       if (_routes.where((r) => r['id'] == _selectedRouteId).isEmpty) {
-        _routes = [{'id': _selectedRouteId, 'name': 'Unknown'}];
+        _routes = [
+          {'id': _selectedRouteId, 'name': 'Unknown'},
+        ];
       }
 
       await _loadHalts(_selectedRouteId!);
       notifyListeners();
       _startPinging(driverId);
+      unawaited(_startBackgroundService(driverId));
     } catch (e) {
       debugPrint('resumeActiveTrip error: $e');
     }
@@ -171,9 +177,47 @@ class DriverProvider extends ChangeNotifier {
       _tripActive = true;
       notifyListeners();
       _startPinging(driverId);
+
+      unawaited(_startBackgroundService(driverId));
     } catch (e) {
       debugPrint('startTrip error: $e');
     }
+  }
+
+  Future<void> _startBackgroundService(String driverId) async {
+    final service = FlutterBackgroundService();
+    final session = SupabaseService.client.auth.currentSession;
+    final jwt = session?.accessToken;
+    if (jwt == null) return;
+
+    if (!(await service.isRunning())) {
+      await service.startService();
+    }
+
+    final routeName = selectedRouteName ?? 'Unknown';
+    final haltsText = _halts.isNotEmpty
+        ? '${_completedHalts.length}/${_halts.length} halts'
+        : null;
+
+    service.invoke('startTrip', {
+      'supabaseUrl': SupabaseConfig.supabaseUrl,
+      'anonKey': SupabaseConfig.anonKey,
+      'jwtToken': jwt,
+      'liveLocationId': _liveLocationId,
+      'routeName': routeName,
+      'haltsText': haltsText,
+    });
+  }
+
+  void _sendNotificationUpdate() {
+    final routeName = selectedRouteName ?? 'Unknown';
+    final haltsCompleted = _halts.isNotEmpty
+        ? '${_completedHalts.length}/${_halts.length} halts'
+        : null;
+    FlutterBackgroundService().invoke('updateNotification', {
+      'title': 'Trip: $routeName',
+      'content': haltsCompleted ?? 'Tracking active',
+    });
   }
 
   Future<void> stopTrip() async {
@@ -197,6 +241,9 @@ class DriverProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('stopTrip error: $e');
     }
+
+    FlutterBackgroundService().invoke('stopService');
+    NotificationService.cancelTripStatus();
 
     _tripActive = false;
     _liveLocationId = null;
@@ -238,6 +285,8 @@ class DriverProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('pingLocation error: $e');
     }
+
+    _sendNotificationUpdate();
   }
 
   Future<void> toggleHalt(String haltId) async {

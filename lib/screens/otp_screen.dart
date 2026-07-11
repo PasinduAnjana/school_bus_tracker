@@ -28,9 +28,9 @@ class _OtpScreenState extends State<OtpScreen> {
     if (success) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid code. Try again.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Invalid code. Try again.')));
     }
   }
 
@@ -49,25 +49,22 @@ class _OtpScreenState extends State<OtpScreen> {
                 'Verify your\nnumber',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Enter the 6-digit code sent to\n${auth.phoneNumber}',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
               const Spacer(),
-              OtpField(
-                onCompleted: (code) => setState(() => _code = code),
-              ),
+              OtpField(onCompleted: (code) => setState(() => _code = code)),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => auth.sendOtp(),

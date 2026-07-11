@@ -52,8 +52,10 @@ class _AdminShellState extends State<AdminShell> {
           selectedIndex: _index,
           onDestinationSelected: (i) => setState(() => _index = i),
           destinations: _tabs
-              .map((t) => NavigationDestination(
-                  icon: Icon(t.icon), label: t.label))
+              .map(
+                (t) =>
+                    NavigationDestination(icon: Icon(t.icon), label: t.label),
+              )
               .toList(),
         ),
       ),

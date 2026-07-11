@@ -6,8 +6,9 @@ import 'package:school_bus_tracker/providers/auth_provider.dart';
 import 'package:school_bus_tracker/screens/login_screen.dart';
 
 void main() {
-  testWidgets('Login screen renders phone input and button',
-      (WidgetTester tester) async {
+  testWidgets('Login screen renders phone input and button', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: ChangeNotifierProvider(
