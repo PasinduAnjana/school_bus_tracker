@@ -14,38 +14,55 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           children: [
-            const SizedBox(height: 48),
-            CircleAvatar(
-              radius: 48,
-              backgroundColor: AppColors.primaryContainer,
-              child: Icon(
-                Icons.person,
-                size: 48,
-                color: AppColors.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              user?.phoneNumber ?? '',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                user?.role.name.toUpperCase() ?? '',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                  letterSpacing: 1,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 44,
+                      backgroundColor: AppColors.primaryContainer,
+                      child: Icon(
+                        Icons.person_rounded,
+                        size: 44,
+                        color: AppColors.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      user?.phoneNumber ?? '',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Chip(label: Text(user?.role.name.toUpperCase() ?? '')),
+                  ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Column(
+                children: [
+                  _SettingItem(
+                    icon: Icons.phone_outlined,
+                    title: 'Phone Number',
+                    subtitle: user?.phoneNumber,
+                  ),
+                  Divider(
+                    indent: 56,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  _SettingItem(
+                    icon: Icons.badge_outlined,
+                    title: 'Role',
+                    subtitle: user?.role.name.toUpperCase(),
+                  ),
+                ],
               ),
             ),
             const Spacer(),
@@ -53,18 +70,70 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () => auth.signOut(),
-                icon: const Icon(Icons.logout),
+                icon: const Icon(Icons.logout_rounded, size: 20),
                 label: const Text('Logout'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.onError,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SettingItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+
+  const _SettingItem({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.onSurfaceVariant, size: 22),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }

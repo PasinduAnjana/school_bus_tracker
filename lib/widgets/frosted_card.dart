@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
 
 class FrostedCard extends StatelessWidget {
   final Widget child;
@@ -15,18 +16,37 @@ class FrostedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: child,
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.03),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: Border.all(
+                color: AppColors.surface.withValues(alpha: 0.5),
+              ),
+            ),
+            child: child,
+          ),
         ),
       ),
     );
