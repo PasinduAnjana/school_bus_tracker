@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/halt.dart';
 import '../services/supabase_client.dart';
+import 'admin_provider.dart';
 
 class ActiveTrip {
   final String locationId;
@@ -48,21 +49,46 @@ class MonitorProvider extends ChangeNotifier {
   List<Halt> _halts = [];
   final Set<String> _completedHaltIds = {};
   RealtimeChannel? _channel;
+  List<StudentWithParent> _parentStudents = [];
+
+
 
   List<ActiveTrip> get activeTrips => _activeTrips;
   List<Halt> get halts => _halts;
   Set<String> get completedHaltIds => _completedHaltIds;
+  List<StudentWithParent> get parentStudents => _parentStudents;
 
-  Future<void> loadActiveTrips() async {
+  // Find the route IDs assigned to this parent's children
+  Future<void> loadParentStudents(String parentId) async {
     try {
       final data = await SupabaseService.client
+          .from('students')
+          .select(
+            'id, name, parent_id, route_id, route:routes!route_id(name)',
+          )
+          .eq('parent_id', parentId);
+      _parentStudents = (data as List)
+          .map((e) => StudentWithParent.fromMap(e as Map<String, dynamic>))
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadParentStudents error: $e');
+    }
+  }
+
+  Future<void> loadActiveTrips({String? routeId}) async {
+    try {
+      var query = SupabaseService.client
           .from('live_locations')
           .select(
             'id, route_id, driver_id, latitude, longitude, recorded_at, '
             'route:routes(name), driver:users_whitelist(phone_number)',
           )
-          .eq('trip_active', true)
-          .order('recorded_at', ascending: false);
+          .eq('trip_active', true);
+      if (routeId != null) {
+        query = query.eq('route_id', routeId);
+      }
+      final data = await query.order('recorded_at', ascending: false);
       _activeTrips = (data as List)
           .map((e) => ActiveTrip.fromMap(e as Map<String, dynamic>))
           .toList();
@@ -72,10 +98,10 @@ class MonitorProvider extends ChangeNotifier {
     }
   }
 
-  void subscribe() {
+  void subscribe({String? routeId}) {
     _channel?.unsubscribe();
-    _channel = SupabaseService.client
-        .channel('monitor-active-trips')
+    final channel = SupabaseService.client
+        .channel('monitor-active-trips-${routeId ?? 'all'}')
         .onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
@@ -86,10 +112,23 @@ class MonitorProvider extends ChangeNotifier {
             value: true,
           ),
           callback: (_) {
-            loadActiveTrips();
+            loadActiveTrips(routeId: routeId);
           },
-        )
-        .subscribe();
+        );
+    if (routeId != null) {
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'trip_halts',
+        callback: (_) {
+          final trip = _activeTrips.where((t) => t.routeId == routeId);
+          for (final t in trip) {
+            loadHalts(t.routeId, t.locationId);
+          }
+        },
+      );
+    }
+    _channel = channel.subscribe();
   }
 
   void cancel() {
