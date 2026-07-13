@@ -133,6 +133,36 @@ class _LiveMapViewState extends State<LiveMapView> {
                     ),
                   ],
                 ),
+                if (selected != null)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: selected.isStale ? Colors.orange : const Color(0xFF4CAF50),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${selected.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${selected.recordedAt.toLocal().minute.toString().padLeft(2, '0')}:${selected.recordedAt.toLocal().second.toString().padLeft(2, '0')}',
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -282,7 +312,7 @@ class _LiveMapViewState extends State<LiveMapView> {
                                             ),
                                           ),
                                           Text(
-                                            '${t.recordedAt.hour.toString().padLeft(2, '0')}:${t.recordedAt.minute.toString().padLeft(2, '0')}',
+                                            '${t.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${t.recordedAt.toLocal().minute.toString().padLeft(2, '0')}',
                                             style: TextStyle(
                                               fontSize: 12,
                                               color: Theme.of(context)
@@ -393,7 +423,7 @@ class _TripHeaderCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    'Last seen: ${trip.recordedAt.hour.toString().padLeft(2, '0')}:${trip.recordedAt.minute.toString().padLeft(2, '0')}',
+                    'Last seen: ${trip.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${trip.recordedAt.toLocal().minute.toString().padLeft(2, '0')}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),

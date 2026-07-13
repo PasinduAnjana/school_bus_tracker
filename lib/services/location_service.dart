@@ -27,6 +27,10 @@ class LocationService {
     }
   }
 
+  static Stream<LocationData> onLocationChanged() {
+    return _location.onLocationChanged;
+  }
+
   static Future<bool> enableBackgroundMode({required bool enable}) async {
     try {
       return await _location.enableBackgroundMode(enable: enable);

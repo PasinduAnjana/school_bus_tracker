@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:location/location.dart';
 import '../config/supabase_config.dart';
 import '../models/halt.dart';
 import '../services/location_service.dart';
@@ -17,7 +19,9 @@ class DriverProvider extends ChangeNotifier {
   double? _currentLat;
   double? _currentLng;
   DateTime? _lastPing;
+  int _pingSignal = 0;
   Timer? _pingTimer;
+  StreamSubscription<LocationData>? _locationStream;
   bool _gpsReady = false;
   bool _resumed = false;
 
@@ -29,6 +33,7 @@ class DriverProvider extends ChangeNotifier {
   double? get currentLat => _currentLat;
   double? get currentLng => _currentLng;
   DateTime? get lastPing => _lastPing;
+  int get pingSignal => _pingSignal;
   bool get gpsReady => _gpsReady;
   bool get resumed => _resumed;
 
@@ -50,6 +55,13 @@ class DriverProvider extends ChangeNotifier {
       await LocationService.requestEnable();
     }
     _gpsReady = true;
+    _locationStream = LocationService.onLocationChanged().listen((loc) {
+      if (loc.latitude != null && loc.longitude != null) {
+        _currentLat = loc.latitude;
+        _currentLng = loc.longitude;
+        notifyListeners();
+      }
+    });
     notifyListeners();
   }
 
@@ -245,6 +257,8 @@ class DriverProvider extends ChangeNotifier {
     FlutterBackgroundService().invoke('stopService');
     NotificationService.cancelTripStatus();
 
+    _locationStream?.cancel();
+    _locationStream = null;
     _tripActive = false;
     _liveLocationId = null;
     _completedHalts.clear();
@@ -262,6 +276,8 @@ class DriverProvider extends ChangeNotifier {
   void _stopPinging() {
     _pingTimer?.cancel();
     _pingTimer = null;
+    _locationStream?.cancel();
+    _locationStream = null;
   }
 
   Future<void> _pingLocation(String driverId) async {
@@ -282,42 +298,55 @@ class DriverProvider extends ChangeNotifier {
             'recorded_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('id', _liveLocationId!);
+      _pingSignal++;
+      notifyListeners();
     } catch (e) {
       debugPrint('pingLocation error: $e');
     }
 
+    await _checkHaltProximity();
     _sendNotificationUpdate();
   }
 
-  Future<void> toggleHalt(String haltId) async {
-    if (_completedHalts.contains(haltId)) {
-      _completedHalts.remove(haltId);
-      if (_liveLocationId != null) {
-        try {
-          await SupabaseService.client
-              .from('trip_halts')
-              .delete()
-              .eq('live_location_id', _liveLocationId!)
-              .eq('halt_id', haltId);
-        } catch (e) {
-          debugPrint('uncomplete halt error: $e');
-        }
-      }
-    } else {
-      _completedHalts.add(haltId);
-      if (_liveLocationId != null) {
+  Future<void> _checkHaltProximity() async {
+    if (_currentLat == null || _currentLng == null) return;
+    if (_liveLocationId == null) return;
+
+    for (final halt in _halts) {
+      if (_completedHalts.contains(halt.id)) continue;
+      if (halt.latitude == null || halt.longitude == null) continue;
+
+      final dist = _haversine(
+        _currentLat!, _currentLng!,
+        halt.latitude!, halt.longitude!,
+      );
+
+      if (dist <= 5) {
+        _completedHalts.add(halt.id);
         try {
           await SupabaseService.client.from('trip_halts').insert({
             'live_location_id': _liveLocationId!,
-            'halt_id': haltId,
+            'halt_id': halt.id,
           });
         } catch (e) {
-          debugPrint('complete halt error: $e');
+          debugPrint('auto-complete halt error: $e');
         }
       }
     }
-    notifyListeners();
+    if (_completedHalts.isNotEmpty) notifyListeners();
   }
+
+  double _haversine(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371000.0;
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a = _sin2(dLat / 2) +
+        math.cos(_toRadians(lat1)) * math.cos(_toRadians(lat2)) * _sin2(dLon / 2);
+    return r * 2 * math.asin(math.sqrt(a));
+  }
+
+  double _toRadians(double deg) => deg * math.pi / 180.0;
+  double _sin2(double x) => math.sin(x) * math.sin(x);
 
   void reset() {
     _stopPinging();
