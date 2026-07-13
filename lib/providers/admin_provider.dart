@@ -327,7 +327,7 @@ class AdminProvider extends ChangeNotifier {
           .from('halts')
           .select('*')
           .eq('route_id', routeId)
-          .order('stop_order');
+          .order('arrival_time', ascending: true);
       _haltsByRoute[routeId] = (data as List)
           .map((e) => Halt.fromMap(e))
           .toList();
@@ -404,38 +404,6 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> reorderHalts(String routeId, List<String> haltIds) async {
-    try {
-      final existing = _haltsByRoute[routeId];
-      if (existing == null) return;
-      final reordered = haltIds
-          .map((id) => existing.firstWhere((h) => h.id == id))
-          .toList();
-      for (var i = 0; i < reordered.length; i++) {
-        reordered[i] = Halt(
-          id: reordered[i].id,
-          routeId: reordered[i].routeId,
-          name: reordered[i].name,
-          arrivalTime: reordered[i].arrivalTime,
-          latitude: reordered[i].latitude,
-          longitude: reordered[i].longitude,
-          stopOrder: i,
-        );
-      }
-      _haltsByRoute[routeId] = reordered;
-      notifyListeners();
-
-      for (var i = 0; i < haltIds.length; i++) {
-        await SupabaseService.client
-            .from('halts')
-            .update({'stop_order': i})
-            .eq('id', haltIds[i]);
-      }
-    } catch (e) {
-      debugPrint('reorderHalts error: $e');
-      await loadHalts(routeId);
-    }
-  }
 
   Future<void> loadPayments(String month) async {
     _selectedMonth = month;

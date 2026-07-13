@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/driver_provider.dart';
+import '../../widgets/frosted_card.dart';
 
 class DriverMapPage extends StatefulWidget {
   final Halt? focusHalt;
@@ -42,6 +43,12 @@ class _DriverMapPageState extends State<DriverMapPage> {
         _mapController.move(LatLng(driver.currentLat!, driver.currentLng!), 16);
       });
     }
+
+    final nextHalt = driver.halts.isNotEmpty
+        ? driver.halts
+            .where((h) => !driver.completedHalts.contains(h.id))
+            .firstOrNull
+        : null;
 
     return Stack(
       children: [
@@ -83,41 +90,71 @@ class _DriverMapPageState extends State<DriverMapPage> {
                     ),
                   for (final halt in driver.halts)
                     if (halt.latitude != null && halt.longitude != null)
-                      Marker(
-                        point: LatLng(halt.latitude!, halt.longitude!),
-                        width: 36,
-                        height: 44,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
+                      if (driver.completedHalts.contains(halt.id))
+                        Marker(
+                          point: LatLng(halt.latitude!, halt.longitude!),
+                          width: 24,
+                          height: 24,
+                          child: Center(
+                            child: Container(
+                              width: 14,
+                              height: 14,
                               decoration: BoxDecoration(
-                                color: driver.completedHalts.contains(halt.id)
-                                    ? const Color(0xFF4CAF50)
-                                    : Colors.black87,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${halt.stopOrder + 1}',
-                                style: const TextStyle(
+                                color: const Color(0xFF4CAF50),
+                                shape: BoxShape.circle,
+                                border: Border.all(
                                   color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  width: 2,
                                 ),
                               ),
                             ),
-                            const Icon(
-                              Icons.location_on,
-                              color: Color(0xFFFF5252),
-                              size: 20,
-                            ),
-                          ],
+                          ),
+                        )
+                      else if (halt.id == nextHalt?.id)
+                        Marker(
+                          point: LatLng(halt.latitude!, halt.longitude!),
+                          width: 40,
+                          height: 40,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              const Positioned(
+                                left: -20,
+                                top: -20,
+                                child: SizedBox(
+                                  width: 80,
+                                  height: 80,
+                                  child: _NextHaltGlow(),
+                                ),
+                              ),
+                              Center(
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Marker(
+                          point: LatLng(halt.latitude!, halt.longitude!),
+                          width: 28,
+                          height: 36,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Color(0xFFFFD700),
+                            size: 28,
+                          ),
                         ),
-                      ),
                 ],
               ),
           ],
@@ -142,9 +179,61 @@ class _DriverMapPageState extends State<DriverMapPage> {
                 '${driver.lastPing!.hour.toString().padLeft(2, '0')}:${driver.lastPing!.minute.toString().padLeft(2, '0')}:${driver.lastPing!.second.toString().padLeft(2, '0')}',
                 style: const TextStyle(color: Colors.white, fontSize: 11),
               ),
+              ),
             ),
+        if (driver.tripActive)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: _NextHaltBanner(driver: driver),
           ),
       ],
+    );
+  }
+}
+
+class _NextHaltBanner extends StatelessWidget {
+  final DriverProvider driver;
+  const _NextHaltBanner({required this.driver});
+
+  @override
+  Widget build(BuildContext context) {
+    final halts = driver.halts;
+    final nextHalt = halts.isNotEmpty
+        ? halts.where((h) => !driver.completedHalts.contains(h.id)).firstOrNull
+        : null;
+
+    if (nextHalt == null) return const SizedBox.shrink();
+
+    return FrostedCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 14,
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFD700),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            nextHalt.name,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+          const Spacer(),
+          Text(
+            nextHalt.arrivalTime,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -204,6 +293,61 @@ class _PingRippleState extends State<_PingRipple>
   }
 }
 
+class _NextHaltGlow extends StatefulWidget {
+  const _NextHaltGlow();
+
+  @override
+  State<_NextHaltGlow> createState() => _NextHaltGlowState();
+}
+
+class _NextHaltGlowState extends State<_NextHaltGlow>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    _scale = Tween<double>(begin: 0.5, end: 1.5).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _fade = Tween<double>(begin: 0.4, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, _) => Transform.scale(
+        scale: _scale.value,
+        child: Opacity(
+          opacity: _fade.value,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFD700),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _StatusBadge extends StatelessWidget {
   final DriverProvider driver;
   const _StatusBadge({required this.driver});
@@ -211,14 +355,16 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4CAF50), Color(0xFF388E3C)],
+        ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 4,
+            color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+            blurRadius: 8,
           ),
         ],
       ),

@@ -137,7 +137,7 @@ class MonitorProvider extends ChangeNotifier {
           .from('halts')
           .select('*')
           .eq('route_id', routeId)
-          .order('stop_order');
+          .order('arrival_time', ascending: true);
       _halts = (haltData as List).map((e) => Halt.fromMap(e)).toList();
 
       final tripData = await SupabaseService.client

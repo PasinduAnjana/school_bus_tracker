@@ -69,6 +69,7 @@ class _LiveMapViewState extends State<LiveMapView> {
     final monitor = context.watch<MonitorProvider>();
     final trips = monitor.activeTrips;
     ActiveTrip? selected;
+    Halt? nextHalt;
     try {
       selected = trips.firstWhere((t) => t.locationId == _selectedTripId);
     } catch (_) {
@@ -81,6 +82,13 @@ class _LiveMapViewState extends State<LiveMapView> {
           });
         }
       }
+    }
+    if (selected != null) {
+      nextHalt = monitor.halts.isNotEmpty
+          ? monitor.halts
+              .where((h) => !monitor.completedHaltIds.contains(h.id))
+              .firstOrNull
+          : null;
     }
 
     return Column(
@@ -125,12 +133,35 @@ class _LiveMapViewState extends State<LiveMapView> {
                             if (halt.latitude != null && halt.longitude != null)
                               Marker(
                                 point: LatLng(halt.latitude!, halt.longitude!),
-                                width: 40,
-                                height: 50,
-                                child: _HaltMarker(
-                                  stopNumber: halt.stopOrder + 1,
-                                  isCompleted:
-                                      monitor.completedHaltIds.contains(halt.id),
+                                width: monitor.completedHaltIds.contains(halt.id)
+                                    ? 24
+                                    : halt.id == nextHalt?.id
+                                        ? 44
+                                        : 32,
+                                height: monitor.completedHaltIds.contains(halt.id)
+                                    ? 30
+                                    : halt.id == nextHalt?.id
+                                        ? 44
+                                        : 38,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    if (halt.id == nextHalt?.id)
+                                      const Positioned(
+                                        left: -20,
+                                        top: -20,
+                                        child: SizedBox(
+                                          width: 80,
+                                          height: 80,
+                                          child: _NextHaltGlow(),
+                                        ),
+                                      ),
+                                    _HaltMarker(
+                                      isCompleted: monitor.completedHaltIds
+                                          .contains(halt.id),
+                                      isNext: halt.id == nextHalt?.id,
+                                    ),
+                                  ],
                                 ),
                               ),
                       ],
@@ -453,14 +484,16 @@ class _HaltTile extends StatelessWidget {
                   .colorScheme
                   .primary
                   .withValues(alpha: 0.2),
-          child: Text(
-            '${halt.stopOrder + 1}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: isCompleted ? Colors.white : null,
-            ),
-          ),
+          child: isCompleted
+              ? const Icon(Icons.check, size: 16, color: Colors.white)
+              : Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFD700),
+                    shape: BoxShape.circle,
+                  ),
+                ),
         ),
         title: Text(halt.name, style: const TextStyle(fontSize: 13)),
         subtitle: Text(
@@ -476,67 +509,126 @@ class _HaltTile extends StatelessWidget {
 }
 
 class _HaltMarker extends StatelessWidget {
-  final int stopNumber;
   final bool isCompleted;
+  final bool isNext;
 
   const _HaltMarker({
-    required this.stopNumber,
     required this.isCompleted,
+    this.isNext = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? const Color(0xFF4CAF50)
-                : const Color(0xFFFFD700),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: (isCompleted
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFFFFD700))
-                    .withValues(alpha: 0.35),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isCompleted)
-                const Icon(Icons.check, size: 12, color: Colors.white),
-              if (isCompleted) const SizedBox(width: 2),
-              Text(
-                isCompleted ? '' : '$stopNumber',
-                style: TextStyle(
-                  color: isCompleted ? Colors.white : Colors.black87,
-                  fontSize: isCompleted ? 0 : 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Transform.rotate(
-          angle: 3.14159 / 4,
-          child: Container(
-            width: 9,
-            height: 9,
+    if (isCompleted) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 14,
+            height: 14,
             decoration: BoxDecoration(
-              color: isCompleted
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFFFD700),
+              color: const Color(0xFF4CAF50),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          Transform.rotate(
+            angle: 3.14159 / 4,
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: const BoxDecoration(
+                color: Color(0xFF4CAF50),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    if (isNext) {
+      return Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFD700),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+      );
+    }
+    return const Icon(
+      Icons.location_on,
+      color: Color(0xFFFFD700),
+      size: 28,
+    );
+  }
+}
+
+class _NextHaltGlow extends StatefulWidget {
+  const _NextHaltGlow();
+
+  @override
+  State<_NextHaltGlow> createState() => _NextHaltGlowState();
+}
+
+class _NextHaltGlowState extends State<_NextHaltGlow>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+  late Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    _scale = Tween<double>(begin: 0.5, end: 1.5).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _fade = Tween<double>(begin: 0.4, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, _) => Transform.scale(
+        scale: _scale.value,
+        child: Opacity(
+          opacity: _fade.value,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFD700),
+              shape: BoxShape.circle,
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -281,42 +281,24 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
             )
           else
-            ReorderableListView.builder(
+            ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: halts.length,
-              onReorderItem: (from, to) {
-                final items = halts.toList();
-                final moved = items.removeAt(from);
-                items.insert(to, moved);
-                admin.reorderHalts(
-                  widget.routeId,
-                  items.map((h) => h.id).toList(),
-                );
-              },
               itemBuilder: (_, i) {
                 final halt = halts[i];
                 return Card(
                   key: ValueKey(halt.id),
                   child: ListTile(
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ReorderableDragStartListener(
-                          index: i,
-                          child: const Icon(Icons.drag_handle),
-                        ),
-                        const SizedBox(width: 8),
-                        CircleAvatar(
-                          backgroundColor: const Color(
-                            0xFFFFD700,
-                          ).withValues(alpha: 0.2),
-                          child: Text(
-                            '${halt.stopOrder + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
+                    leading: CircleAvatar(
+                      backgroundColor: const Color(
+                        0xFFFFD700,
+                      ).withValues(alpha: 0.2),
+                      child: const Icon(
+                        Icons.schedule,
+                        size: 18,
+                        color: Color(0xFF1E1E1E),
+                      ),
                     ),
                     title: Text(halt.name),
                     subtitle: Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/driver_provider.dart';
+import '../../widgets/frosted_card.dart';
 
 class DriverStopsPage extends StatelessWidget {
   final void Function(Halt halt)? onHaltTap;
@@ -42,57 +43,59 @@ class DriverStopsPage extends StatelessWidget {
 
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 48,
-                height: 48,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 4,
-                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        progress == 1.0 ? const Color(0xFF4CAF50) : const Color(0xFFFFD700),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: FrostedCard(
+            padding: const EdgeInsets.all(16),
+            borderRadius: 16,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 4,
+                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progress == 1.0 ? const Color(0xFF4CAF50) : const Color(0xFFFFD700),
+                        ),
                       ),
-                    ),
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                      Text(
+                        '${(progress * 100).round()}%',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    driver.selectedRouteName ?? 'Route',
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        driver.selectedRouteName ?? 'Route',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$completed of $total halts completed',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$completed of $total halts completed',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
         Expanded(
@@ -102,29 +105,31 @@ class DriverStopsPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final halt = driver.halts[index];
               final done = driver.completedHalts.contains(halt.id);
-              final isNext = !done && (index == 0 || driver.halts
-                  .where((h) => !driver.completedHalts.contains(h.id))
-                  .every((h) => h.stopOrder >= halt.stopOrder));
+              final nextHalt = driver.halts.where((h) => !driver.completedHalts.contains(h.id)).firstOrNull;
+              final isNext = !done && halt.id == nextHalt?.id;
 
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 4),
-                elevation: isNext ? 2 : 0,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   side: isNext
                       ? const BorderSide(color: Color(0xFFFFD700), width: 1.5)
-                      : BorderSide.none,
+                      : BorderSide(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                        ),
                 ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   onTap: halt.latitude != null && halt.longitude != null
                       ? () => onHaltTap?.call(halt)
                       : null,
                   child: Padding(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
-                        Container(
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
@@ -138,16 +143,14 @@ class DriverStopsPage extends StatelessWidget {
                           alignment: Alignment.center,
                           child: done
                               ? const Icon(Icons.check, size: 18, color: Colors.white)
-                              : Text(
-                                  '${halt.stopOrder + 1}',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: done
-                                        ? Colors.white
-                                        : isNext
-                                            ? const Color(0xFF1E1E1E)
-                                            : theme.colorScheme.onSurfaceVariant,
+                              : Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isNext
+                                        ? const Color(0xFFFFD700)
+                                        : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                         ),
@@ -182,31 +185,36 @@ class DriverStopsPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (done)
-                          const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22)
-                        else if (isNext)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'NEXT',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1E1E1E),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          )
-                        else
-                          const Icon(
-                            Icons.radio_button_unchecked,
-                            color: Color(0xFFFFD700),
-                            size: 22,
-                          ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: done
+                              ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22)
+                              : isNext
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'NEXT',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF1E1E1E),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.radio_button_unchecked,
+                                      color: Color(0xFFFFD700),
+                                      size: 22,
+                                    ),
+                        ),
                       ],
                     ),
                   ),
