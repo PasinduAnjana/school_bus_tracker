@@ -106,11 +106,6 @@ class MonitorProvider extends ChangeNotifier {
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'live_locations',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'trip_active',
-            value: true,
-          ),
           callback: (_) {
             loadActiveTrips(routeId: routeId);
           },
