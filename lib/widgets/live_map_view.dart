@@ -20,7 +20,7 @@ class LiveMapView extends StatefulWidget {
 class _LiveMapViewState extends State<LiveMapView> {
   final MapController _mapController = MapController();
   String? _selectedTripId;
-  bool _mapVisible = true;
+  bool _showMap = false;
 
   @override
   void initState() {
@@ -56,8 +56,12 @@ class _LiveMapViewState extends State<LiveMapView> {
   }
 
   void _showTripOnMap(ActiveTrip trip) {
-    _selectTrip(trip);
-    setState(() => _mapVisible = true);
+    if (_selectedTripId == trip.locationId && _showMap) {
+      setState(() => _showMap = false);
+    } else {
+      _selectTrip(trip);
+      setState(() => _showMap = true);
+    }
   }
 
   @override
@@ -81,7 +85,7 @@ class _LiveMapViewState extends State<LiveMapView> {
 
     return Column(
       children: [
-        if (_mapVisible)
+        if (_showMap)
           Expanded(
             flex: 2,
             child: Stack(
@@ -170,39 +174,6 @@ class _LiveMapViewState extends State<LiveMapView> {
           flex: 1,
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 4, 8, 0),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => setState(() => _mapVisible = !_mapVisible),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _mapVisible ? Icons.visibility_off : Icons.visibility,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _mapVisible ? 'Hide map' : 'Show map',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               Expanded(
                 child: trips.isEmpty
                     ? Center(
