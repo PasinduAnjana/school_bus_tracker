@@ -231,8 +231,11 @@ class _ActiveTripContent extends StatelessWidget {
           borderRadius: 16,
           child: _ProgressContent(driver: driver),
         ),
-        const Spacer(),
-        _BigTripButton(driver: driver),
+        Expanded(
+          child: Center(
+            child: _BigTripButton(driver: driver),
+          ),
+        ),
         if (driver.lastPing != null)
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
@@ -571,6 +574,7 @@ class _BigTripButtonState extends State<_BigTripButton>
     with SingleTickerProviderStateMixin {
   AnimationController? _pulseController;
   Animation<double>? _pulseAnim;
+  bool _starting = false;
 
   @override
   void initState() {
@@ -602,21 +606,64 @@ class _BigTripButtonState extends State<_BigTripButton>
     final canStart = widget.driver.selectedRouteId != null && widget.driver.gpsReady;
     final showPulse = !isActive && canStart && _pulseAnim != null;
 
+    if (_starting) {
+      return SizedBox(
+        width: 200,
+        height: 200,
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF388E3C)],
+            ),
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 42,
+                height: 42,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'STARTING',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     Widget button;
     if (isActive) {
+      _starting = false;
       button = _SlideToEnd(
         onComplete: () => widget.driver.stopTrip(),
       );
     } else {
       button = GestureDetector(
         onTap: canStart
-            ? () => widget.driver.startTrip(
-                context.read<AuthProvider>().currentUser!.id)
+            ? () {
+                setState(() => _starting = true);
+                widget.driver.startTrip(
+                    context.read<AuthProvider>().currentUser!.id);
+              }
             : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width: 150,
-          height: 150,
+          width: 200,
+          height: 200,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
@@ -637,14 +684,14 @@ class _BigTripButtonState extends State<_BigTripButton>
               Icon(
                 Icons.play_arrow_rounded,
                 color: Color(0xFF1E1E1E),
-                size: 44,
+                size: 56,
               ),
               SizedBox(height: 4),
               Text(
                 'START',
                 style: TextStyle(
                   color: Color(0xFF1E1E1E),
-                  fontSize: 15,
+                  fontSize: 18,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.4,
                 ),
@@ -700,7 +747,7 @@ class _SlideToEndState extends State<_SlideToEnd> {
   void _onDragUpdate(DragUpdateDetails d, double width) {
     if (_completed) return;
     setState(() {
-      _dragFraction = (_dragFraction + d.delta.dx / width).clamp(0.0, 1.1);
+      _dragFraction = (d.localPosition.dx / width).clamp(0.0, 1.1);
     });
   }
 
@@ -723,45 +770,82 @@ class _SlideToEndState extends State<_SlideToEnd> {
         final thumbSize = 52.0;
         final maxSlide = width - thumbSize - 8;
         final thumbLeft = 4.0 + maxSlide * _dragFraction.clamp(0.0, 1.0);
+        final showProgress = _dragFraction > 0.0;
 
-        return Container(
-          width: width,
-          height: 64,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF5252), Color(0xFFD32F2F)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF5252).withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        return GestureDetector(
+          onHorizontalDragUpdate: (d) => _onDragUpdate(d, width),
+          onHorizontalDragEnd: (_) => _onDragEnd(width),
+          child: Container(
+            width: width,
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF5252), Color(0xFFD32F2F)],
               ),
-            ],
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Center(
-                  child: Text(
-                    'Slide to end trip',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF5252).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                if (showProgress)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: thumbLeft + thumbSize / 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 1.0),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                Positioned.fill(
+                  child: Center(
+                    child: Text(
+                      'Slide to end trip',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: showProgress ? 0.9 : 0.7),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: thumbLeft,
-                top: 6,
-                child: GestureDetector(
-                  onHorizontalDragUpdate: (d) => _onDragUpdate(d, width),
-                  onHorizontalDragEnd: (_) => _onDragEnd(width),
+                if (showProgress)
+                  Positioned(
+                    left: thumbLeft - 6,
+                    top: 0,
+                    bottom: 0,
+                    width: thumbSize + 12,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.35 * _dragFraction.clamp(0.0, 1.0)),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  left: thumbLeft,
+                  top: 6,
                   child: Container(
                     width: thumbSize,
                     height: thumbSize,
@@ -783,11 +867,12 @@ class _SlideToEndState extends State<_SlideToEnd> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 }
+

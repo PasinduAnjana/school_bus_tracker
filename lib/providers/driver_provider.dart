@@ -169,6 +169,8 @@ class DriverProvider extends ChangeNotifier {
 
     _currentLat = loc.latitude;
     _currentLng = loc.longitude;
+    _tripActive = true;
+    notifyListeners();
 
     try {
       final response = await SupabaseService.client
@@ -233,6 +235,9 @@ class DriverProvider extends ChangeNotifier {
   }
 
   Future<void> stopTrip() async {
+    _tripActive = false;
+    _completedHalts.clear();
+    notifyListeners();
     _stopPinging();
 
     final loc = await LocationService.getCurrentLocation();
