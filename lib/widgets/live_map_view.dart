@@ -501,7 +501,7 @@ class _HaltTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return FrostedCard(
       margin: const EdgeInsets.only(bottom: 4),
       child: ListTile(
         enabled: onTap != null,

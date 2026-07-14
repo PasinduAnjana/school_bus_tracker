@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
 
 class SquishyButton extends StatefulWidget {
   final String label;
   final VoidCallback? onTap;
-  final Color backgroundColor;
-  final Color foregroundColor;
-  final double width;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final double? width;
   final double height;
   final bool isLoading;
+  final IconData? icon;
 
   const SquishyButton({
     super.key,
     required this.label,
     this.onTap,
-    this.backgroundColor = AppColors.primary,
-    this.foregroundColor = AppColors.onPrimary,
+    this.backgroundColor,
+    this.foregroundColor,
     this.width = double.infinity,
     this.height = 56,
     this.isLoading = false,
+    this.icon,
   });
 
   @override
@@ -81,19 +82,24 @@ class _SquishyButtonState extends State<SquishyButton>
       onTapCancel: _onTapCancel,
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
-        ignoring: widget.isLoading,
+        ignoring: widget.isLoading || widget.onTap == null,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
+            final theme = Theme.of(context);
+            final bgColor = widget.backgroundColor ?? theme.colorScheme.primary;
+            final fgColor = widget.foregroundColor ?? theme.colorScheme.onPrimary;
+
             return Container(
               width: widget.width,
               height: widget.height,
+              padding: widget.width == null ? const EdgeInsets.symmetric(horizontal: 24) : null,
               decoration: BoxDecoration(
-                color: widget.backgroundColor,
+                color: widget.onTap == null ? bgColor.withValues(alpha: 0.5) : bgColor,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
+                boxShadow: widget.onTap == null ? [] : [
                   BoxShadow(
-                    color: widget.backgroundColor.withValues(alpha: 0.3),
+                    color: bgColor.withValues(alpha: 0.3),
                     blurRadius: 8 + _elevationAnim.value * 4,
                     offset: Offset(0, 2 + _elevationAnim.value * 2),
                   ),
@@ -108,17 +114,26 @@ class _SquishyButtonState extends State<SquishyButton>
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          color: widget.foregroundColor,
+                          color: fgColor,
                         ),
                       )
-                    : Text(
-                        widget.label,
-                        style: TextStyle(
-                          color: widget.foregroundColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                        ),
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.icon != null) ...[
+                            Icon(widget.icon, color: fgColor, size: 20),
+                            const SizedBox(width: 8),
+                          ],
+                          Text(
+                            widget.label,
+                            style: TextStyle(
+                              color: fgColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
                       ),
               ),
             );

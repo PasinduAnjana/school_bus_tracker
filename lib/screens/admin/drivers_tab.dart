@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
+import '../../widgets/frosted_card.dart';
 
 class DriversTab extends StatefulWidget {
   const DriversTab({super.key});
@@ -109,11 +110,12 @@ class _DriversTabState extends State<DriversTab> {
                       ),
                     )
                   : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 100),
                       itemCount: admin.drivers.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final d = admin.drivers[i];
-                        return Card(
+                        return FrostedCard(
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -173,6 +175,7 @@ class _DriversTabState extends State<DriversTab> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'drivers_fab',
         onPressed: _showAddDriverDialog,
         icon: const Icon(Icons.add),
         label: const Text('Add Driver'),

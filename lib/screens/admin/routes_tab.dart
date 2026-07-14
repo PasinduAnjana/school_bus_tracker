@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import 'route_detail_screen.dart';
 import '../../config/app_theme.dart';
+import '../../widgets/frosted_card.dart';
 
 class RoutesTab extends StatefulWidget {
   const RoutesTab({super.key});
@@ -105,11 +106,12 @@ class _RoutesTabState extends State<RoutesTab> {
                       ),
                     )
                   : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 100),
                       itemCount: admin.routes.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final r = admin.routes[i];
-                        return Card(
+                        return FrostedCard(
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Theme.of(
@@ -188,6 +190,7 @@ class _RoutesTabState extends State<RoutesTab> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'routes_fab',
         onPressed: _showCreateRouteDialog,
         icon: const Icon(Icons.add),
         label: const Text('Create Route'),

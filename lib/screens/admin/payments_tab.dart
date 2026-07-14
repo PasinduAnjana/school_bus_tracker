@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../config/app_theme.dart';
+import '../../widgets/frosted_card.dart';
 
 class PaymentsTab extends StatefulWidget {
   const PaymentsTab({super.key});
@@ -288,8 +289,7 @@ class _PaymentCardState extends State<_PaymentCard>
       animation: _animCtrl,
       builder: (context, _) {
         final t = _bgAnim.value;
-        return Card(
-          clipBehavior: Clip.antiAlias,
+        return FrostedCard(
           child: InkWell(
             onTap: () => widget.onToggle(!widget.paid),
             child: Container(

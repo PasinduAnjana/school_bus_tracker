@@ -258,6 +258,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'map_picker_fab',
         onPressed: () => Navigator.pop(context, _selected),
         icon: const Icon(Icons.check),
         label: const Text('Confirm'),

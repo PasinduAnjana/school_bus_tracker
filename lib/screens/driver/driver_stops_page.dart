@@ -113,19 +113,8 @@ class DriverStopsPage extends StatelessWidget {
                   .firstOrNull;
               final isNext = !done && halt.id == nextHalt?.id;
 
-              return Card(
+              return FrostedCard(
                 margin: const EdgeInsets.symmetric(vertical: 4),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: isNext
-                      ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
-                      : BorderSide(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
                   onTap: halt.latitude != null && halt.longitude != null

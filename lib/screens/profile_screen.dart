@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../config/app_theme.dart';
+import '../widgets/frosted_card.dart';
+import '../widgets/squishy_button.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           children: [
-            Card(
+            FrostedCard(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 32,
@@ -48,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Card(
+            FrostedCard(
               child: Column(
                 children: [
                   _SettingItem(
@@ -71,18 +73,12 @@ class ProfileScreen extends StatelessWidget {
             const Spacer(),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => auth.signOut(),
-                icon: const Icon(Icons.logout_rounded, size: 20),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                  foregroundColor: AppColors.onError,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
+              child: SquishyButton(
+                onTap: () => auth.signOut(),
+                icon: Icons.logout_rounded,
+                label: 'Logout',
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.onError,
               ),
             ),
             const SizedBox(height: 24),

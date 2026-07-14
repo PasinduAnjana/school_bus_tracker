@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/squishy_button.dart';
 import 'map_picker_screen.dart';
 
 class RouteDetailScreen extends StatefulWidget {
@@ -102,12 +103,14 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            SquishyButton(
+              onTap: () {
                 if (nameCtrl.text.trim().isEmpty) return;
                 Navigator.pop(ctx, true);
               },
-              child: const Text('Save'),
+              label: 'Save',
+              width: null,
+              height: 44,
             ),
           ],
         ),
@@ -199,12 +202,14 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            SquishyButton(
+              onTap: () {
                 if (nameCtrl.text.trim().isEmpty) return;
                 Navigator.pop(ctx, true);
               },
-              child: const Text('Save'),
+              label: 'Save',
+              width: null,
+              height: 44,
             ),
           ],
         ),
@@ -233,6 +238,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(widget.routeName)),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'route_detail_fab',
         onPressed: _addHalt,
         child: const Icon(Icons.add),
       ),
@@ -274,7 +280,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           Text('Halts', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           if (halts.isEmpty)
-            const Card(
+            const FrostedCard(
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Center(child: Text('No halts yet. Tap + to add one.')),
@@ -287,7 +293,8 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               itemCount: halts.length,
               itemBuilder: (_, i) {
                 final halt = halts[i];
-                return Card(
+                return FrostedCard(
+                  margin: const EdgeInsets.only(bottom: 8),
                   key: ValueKey(halt.id),
                   child: ListTile(
                     leading: CircleAvatar(

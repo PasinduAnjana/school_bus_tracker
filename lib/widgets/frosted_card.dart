@@ -5,18 +5,20 @@ import '../config/app_theme.dart';
 class FrostedCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? margin;
   final double borderRadius;
 
   const FrostedCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
-    this.borderRadius = 20,
+    this.padding = EdgeInsets.zero,
+    this.margin,
+    this.borderRadius = 16,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget card = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
@@ -45,10 +47,18 @@ class FrostedCard extends StatelessWidget {
                 color: AppColors.surface.withValues(alpha: 0.5),
               ),
             ),
-            child: child,
+            child: Material(
+              type: MaterialType.transparency,
+              child: child,
+            ),
           ),
         ),
       ),
     );
+
+    if (margin != null) {
+      return Padding(padding: margin!, child: card);
+    }
+    return card;
   }
 }

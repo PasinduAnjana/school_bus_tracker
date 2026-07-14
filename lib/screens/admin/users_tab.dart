@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
+import '../../widgets/frosted_card.dart';
 
 class UsersTab extends StatefulWidget {
   const UsersTab({super.key});
@@ -254,11 +255,12 @@ class _UsersTabState extends State<UsersTab> {
                       ),
                     )
                   : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 100),
                       itemCount: admin.students.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final s = admin.students[i];
-                        return Card(
+                        return FrostedCard(
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Theme.of(
@@ -343,6 +345,7 @@ class _UsersTabState extends State<UsersTab> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'users_fab',
         onPressed: _showAddStudentDialog,
         icon: const Icon(Icons.add),
         label: const Text('Add Student'),
