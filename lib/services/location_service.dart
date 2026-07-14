@@ -1,41 +1,50 @@
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
+
+class LocationData {
+  final double latitude;
+  final double longitude;
+
+  LocationData({required this.latitude, required this.longitude});
+}
 
 class LocationService {
   LocationService._();
 
-  static final Location _location = Location();
-
   static Future<bool> requestPermission() async {
-    final permission = await _location.requestPermission();
-    return permission == PermissionStatus.granted ||
-        permission == PermissionStatus.grantedLimited;
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
   }
 
   static Future<bool> isEnabled() async {
-    return _location.serviceEnabled();
+    return Geolocator.isLocationServiceEnabled();
   }
 
   static Future<bool> requestEnable() async {
-    return _location.requestService();
+    return true;
   }
 
   static Future<LocationData?> getCurrentLocation() async {
     try {
-      return _location.getLocation();
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      return LocationData(latitude: p.latitude, longitude: p.longitude);
     } catch (_) {
       return null;
     }
   }
 
   static Stream<LocationData> onLocationChanged() {
-    return _location.onLocationChanged;
+    return Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+    ).map((p) => LocationData(latitude: p.latitude, longitude: p.longitude));
   }
 
   static Future<bool> enableBackgroundMode({required bool enable}) async {
-    try {
-      return await _location.enableBackgroundMode(enable: enable);
-    } catch (_) {
-      return false;
-    }
+    return true;
   }
 }

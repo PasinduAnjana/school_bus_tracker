@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:location/location.dart';
 import '../config/supabase_config.dart';
 import '../models/halt.dart';
 import '../services/location_service.dart';
@@ -206,6 +205,8 @@ class DriverProvider extends ChangeNotifier {
 
     if (!(await service.isRunning())) {
       await service.startService();
+      // Wait for the background isolate to initialize and set up its listeners
+      await Future.delayed(const Duration(seconds: 2));
     }
 
     final routeName = selectedRouteName ?? 'Unknown';

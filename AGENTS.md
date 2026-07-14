@@ -50,7 +50,7 @@ assets/   animations/login.json (Lottie), images/login.svg (unused)
 
 RLS: SELECT = `auth.role() = 'authenticated'` on all tables. Admin write ops gated by `public.is_admin()` (checks JWT phone against whitelist). `live_locations` INSERT/UPDATE uses phone-based whitelist lookup (not `auth.uid()`).
 
-**pg_cron** (migration 011): `cleanup_stale_trips()` runs every minute, sets `trip_active=false` on `live_locations` where `recorded_at` > 5 min old.
+**pg_cron** (migration 011): `cleanup_stale_trips()` runs every 5 minutes, sets `trip_active=false` on `live_locations` where `recorded_at` > 10 min old.
 
 **Realtime publication:** `live_locations` + `halts` — used by `MonitorProvider.subscribe()`.
 

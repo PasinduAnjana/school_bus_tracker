@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:http/http.dart' as http;
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 
 const _serviceNotificationId = 888;
 
@@ -19,6 +19,7 @@ void backgroundServiceEntrypoint() {
       initialNotificationContent: 'Trip tracking active',
       foregroundServiceNotificationId: _serviceNotificationId,
       foregroundServiceTypes: [AndroidForegroundType.location],
+      notificationChannelId: 'bus_tracker_foreground',
     ),
     iosConfiguration: IosConfiguration(
       autoStart: false,
@@ -30,7 +31,6 @@ void backgroundServiceEntrypoint() {
 
 @pragma('vm:entry-point')
 void _onStart(ServiceInstance service) async {
-  final location = Location();
 
   service.on('stopService').listen((_) {
     _pingTimer?.cancel();
@@ -73,8 +73,9 @@ void _onStart(ServiceInstance service) async {
 
     _pingTimer = Timer.periodic(const Duration(seconds: 20), (_) async {
       try {
-        final loc = await location.getLocation();
-        if (loc.latitude == null || loc.longitude == null) return;
+        final loc = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        );
 
         final recordedAt = DateTime.now().toUtc().toIso8601String();
 

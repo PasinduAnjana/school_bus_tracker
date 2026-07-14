@@ -1,8 +1,8 @@
 -- 011_cleanup_stale_trips.sql — Auto-end trips when driver stops pinging
 --
--- Scheduled every minute via pg_cron. Marks trips as inactive when the
--- last recorded_at timestamp is more than 5 minutes old (the Flutter app
--- pings every 20 seconds, so 5 minutes means the driver definitely left).
+-- Scheduled every 5 minutes via pg_cron. Marks trips as inactive when the
+-- last recorded_at timestamp is more than 10 minutes old (the Flutter app
+-- pings every 20 seconds, so 10 minutes means the driver definitely left).
 
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
 
@@ -15,13 +15,13 @@ BEGIN
   UPDATE live_locations
   SET trip_active = false
   WHERE trip_active = true
-    AND recorded_at < now() - interval '5 minutes';
+    AND recorded_at < now() - interval '10 minutes';
 END;
 $$;
 
 SELECT cron.schedule(
   'cleanup-stale-trips',   -- job name
-  '* * * * *',            -- every minute
+  '*/5 * * * *',          -- every 5 minutes
   'SELECT cleanup_stale_trips();'
 );
 
