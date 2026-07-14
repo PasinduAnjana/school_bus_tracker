@@ -14,51 +14,63 @@ class MapPin extends StatelessWidget {
     final pinColor = color ?? colorScheme.primary;
     final iconSize = size * 0.55;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (label != null)
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          if (label != null)
+            Positioned(
+              bottom: size + 4,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 100),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.shadow.withValues(alpha: 0.15),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  label!,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
           Container(
-            constraints: const BoxConstraints(maxWidth: 100),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            width: size,
+            height: size,
             decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(4),
+              color: pinColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: colorScheme.surface, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.15),
-                  blurRadius: 2,
+                  color: colorScheme.shadow.withValues(alpha: 0.25),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Text(
-              label!,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
+            child: Icon(
+              Icons.directions_bus,
+              color: colorScheme.onPrimary,
+              size: iconSize,
             ),
           ),
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: pinColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: colorScheme.surface, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.25),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(
-            Icons.directions_bus,
-            color: colorScheme.onPrimary,
-            size: iconSize,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

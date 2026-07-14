@@ -4,7 +4,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../models/halt.dart';
 import '../providers/monitor_provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'frosted_card.dart';
+import 'map_pin.dart';
 
 class LiveMapView extends StatefulWidget {
   final String? routeId;
@@ -121,16 +123,33 @@ class _LiveMapViewState extends State<LiveMapView> {
                                 : 36,
                             child: GestureDetector(
                               onTap: () => _selectTrip(t),
-                              child: Icon(
-                                Icons.directions_bus_rounded,
+                              child: MapPin(
+                                size: selected?.locationId == t.locationId ? 48 : 36,
+                                label: t.routeName,
                                 color: selected?.locationId == t.locationId
                                     ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.primary
-                                          .withValues(alpha: 0.6),
-                                size: selected?.locationId == t.locationId
-                                    ? 44
-                                    : 32,
-                              ),
+                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                              )
+                                  .animate(
+                                    onPlay: (controller) => controller.repeat(),
+                                  )
+                                  .shimmer(
+                                    duration: 2000.ms,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  )
+                                  .scale(
+                                    begin: const Offset(0.95, 0.95),
+                                    end: const Offset(1.05, 1.05),
+                                    duration: 1000.ms,
+                                    curve: Curves.easeInOut,
+                                  )
+                                  .then()
+                                  .scale(
+                                    begin: const Offset(1.05, 1.05),
+                                    end: const Offset(0.95, 0.95),
+                                    duration: 1000.ms,
+                                    curve: Curves.easeInOut,
+                                  ),
                             ),
                           ),
                         if (selected != null)
@@ -252,7 +271,12 @@ class _LiveMapViewState extends State<LiveMapView> {
                         ),
                       )
                     : ListView(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.only(
+                          left: 8,
+                          right: 8,
+                          top: 8,
+                          bottom: 16 + MediaQuery.of(context).padding.bottom + 80,
+                        ),
                         children: [
                           if (widget.isParentMode) ...[
                             if (selected != null)

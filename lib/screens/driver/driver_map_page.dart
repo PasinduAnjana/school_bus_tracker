@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/driver_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/map_pin.dart';
 
 class DriverMapPage extends StatefulWidget {
   final Halt? focusHalt;
@@ -74,11 +76,29 @@ class _DriverMapPageState extends State<DriverMapPage> {
                     point: LatLng(driver.currentLat!, driver.currentLng!),
                     width: 40,
                     height: 40,
-                    child: Icon(
-                      Icons.directions_bus,
+                    child: MapPin(
+                      size: 48,
+                      label: driver.selectedRouteName ?? 'Bus',
                       color: theme.colorScheme.primary,
-                      size: 36,
-                    ),
+                    )
+                        .animate(onPlay: (c) => c.repeat())
+                        .shimmer(
+                          duration: 2000.ms,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        )
+                        .scale(
+                          begin: const Offset(0.95, 0.95),
+                          end: const Offset(1.05, 1.05),
+                          duration: 1000.ms,
+                          curve: Curves.easeInOut,
+                        )
+                        .then()
+                        .scale(
+                          begin: const Offset(1.05, 1.05),
+                          end: const Offset(0.95, 0.95),
+                          duration: 1000.ms,
+                          curve: Curves.easeInOut,
+                        ),
                   ),
                   if (driver.tripActive)
                     Marker(
@@ -190,7 +210,7 @@ class _DriverMapPageState extends State<DriverMapPage> {
           Positioned(
             left: 16,
             right: 16,
-            bottom: 16,
+            bottom: 16 + MediaQuery.of(context).padding.bottom + 80,
             child: _NextHaltBanner(driver: driver),
           ),
       ],

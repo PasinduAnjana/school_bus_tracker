@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../models/halt.dart';
 import '../../providers/monitor_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/map_pin.dart';
 
 class ParentMapPage extends StatefulWidget {
   final Halt? focusHalt;
@@ -96,11 +98,29 @@ class _ParentMapPageState extends State<ParentMapPage> {
                   point: LatLng(trip.latitude, trip.longitude),
                   width: 40,
                   height: 40,
-                  child: Icon(
-                    Icons.directions_bus,
+                  child: MapPin(
+                    size: 48,
+                    label: trip.routeName,
                     color: theme.colorScheme.primary,
-                    size: 36,
-                  ),
+                  )
+                      .animate(onPlay: (c) => c.repeat())
+                      .shimmer(
+                        duration: 2000.ms,
+                        color: Colors.white.withValues(alpha: 0.5),
+                      )
+                      .scale(
+                        begin: const Offset(0.95, 0.95),
+                        end: const Offset(1.05, 1.05),
+                        duration: 1000.ms,
+                        curve: Curves.easeInOut,
+                      )
+                      .then()
+                      .scale(
+                        begin: const Offset(1.05, 1.05),
+                        end: const Offset(0.95, 0.95),
+                        duration: 1000.ms,
+                        curve: Curves.easeInOut,
+                      ),
                 ),
                 Marker(
                   key: ValueKey('parent_bus_ripple'),
@@ -211,7 +231,7 @@ class _ParentMapPageState extends State<ParentMapPage> {
           Positioned(
             left: 16,
             right: 16,
-            bottom: 16,
+            bottom: 16 + MediaQuery.of(context).padding.bottom + 80,
             child: FrostedCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               borderRadius: 14,
