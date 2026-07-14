@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/driver_provider.dart';
+import '../../services/route_service.dart';
 import '../../widgets/frosted_card.dart';
 import '../../widgets/map_pin.dart';
 
@@ -19,6 +20,31 @@ class DriverMapPage extends StatefulWidget {
 class _DriverMapPageState extends State<DriverMapPage> {
   final MapController _mapController = MapController();
   bool _centeredOnce = false;
+
+  String? _lastTripLoc;
+  String? _lastHaltLoc;
+  List<LatLng> _routePath = [];
+
+  void _checkAndFetchRoute(double tripLat, double tripLng, Halt? nextHalt) {
+    if (nextHalt?.latitude == null || nextHalt?.longitude == null) {
+      if (_routePath.isNotEmpty && mounted) setState(() => _routePath = []);
+      return;
+    }
+
+    final tLoc = '${tripLat.toStringAsFixed(3)},${tripLng.toStringAsFixed(3)}';
+    final hLoc = '${nextHalt!.latitude},${nextHalt.longitude}';
+
+    if (_lastTripLoc != tLoc || _lastHaltLoc != hLoc) {
+      _lastTripLoc = tLoc;
+      _lastHaltLoc = hLoc;
+      RouteService.getRoute(
+        LatLng(tripLat, tripLng),
+        LatLng(nextHalt.latitude!, nextHalt.longitude!),
+      ).then((path) {
+        if (mounted) setState(() => _routePath = path);
+      });
+    }
+  }
 
   @override
   void didUpdateWidget(DriverMapPage oldWidget) {
@@ -52,6 +78,10 @@ class _DriverMapPageState extends State<DriverMapPage> {
               .firstOrNull
         : null;
 
+    if (driver.currentLat != null && driver.currentLng != null) {
+      _checkAndFetchRoute(driver.currentLat!, driver.currentLng!, nextHalt);
+    }
+
     return Stack(
       children: [
         FlutterMap(
@@ -69,6 +99,16 @@ class _DriverMapPageState extends State<DriverMapPage> {
                   'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
               retinaMode: true,
             ),
+            if (_routePath.isNotEmpty)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: _routePath,
+                    strokeWidth: 4,
+                    color: theme.colorScheme.primary,
+                  ),
+                ],
+              ),
             if (driver.currentLat != null && driver.currentLng != null)
               MarkerLayer(
                 markers: [

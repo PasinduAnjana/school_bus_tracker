@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../models/halt.dart';
 import '../providers/monitor_provider.dart';
+import '../services/route_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'frosted_card.dart';
 import 'map_pin.dart';
@@ -23,6 +24,31 @@ class _LiveMapViewState extends State<LiveMapView> {
   final MapController _mapController = MapController();
   String? _selectedTripId;
   bool _showMap = false;
+
+  String? _lastTripLoc;
+  String? _lastHaltLoc;
+  List<LatLng> _routePath = [];
+
+  void _checkAndFetchRoute(double tripLat, double tripLng, Halt? nextHalt) {
+    if (nextHalt?.latitude == null || nextHalt?.longitude == null) {
+      if (_routePath.isNotEmpty && mounted) setState(() => _routePath = []);
+      return;
+    }
+
+    final tLoc = '${tripLat.toStringAsFixed(3)},${tripLng.toStringAsFixed(3)}';
+    final hLoc = '${nextHalt!.latitude},${nextHalt.longitude}';
+
+    if (_lastTripLoc != tLoc || _lastHaltLoc != hLoc) {
+      _lastTripLoc = tLoc;
+      _lastHaltLoc = hLoc;
+      RouteService.getRoute(
+        LatLng(tripLat, tripLng),
+        LatLng(nextHalt.latitude!, nextHalt.longitude!),
+      ).then((path) {
+        if (mounted) setState(() => _routePath = path);
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -46,10 +72,20 @@ class _LiveMapViewState extends State<LiveMapView> {
 
   void _selectTrip(ActiveTrip trip) {
     if (_selectedTripId == trip.locationId) {
-      setState(() => _selectedTripId = null);
+      setState(() {
+        _selectedTripId = null;
+        _lastTripLoc = null;
+        _lastHaltLoc = null;
+        _routePath = [];
+      });
       return;
     }
-    setState(() => _selectedTripId = trip.locationId);
+    setState(() {
+      _selectedTripId = trip.locationId;
+      _lastTripLoc = null;
+      _lastHaltLoc = null;
+      _routePath = [];
+    });
     context.read<MonitorProvider>().loadHalts(trip.routeId, trip.locationId);
     _mapController.move(LatLng(trip.latitude, trip.longitude), 14);
   }
@@ -89,6 +125,9 @@ class _LiveMapViewState extends State<LiveMapView> {
                 .where((h) => !monitor.completedHaltIds.contains(h.id))
                 .firstOrNull
           : null;
+      _checkAndFetchRoute(selected.latitude, selected.longitude, nextHalt);
+    } else {
+      if (_routePath.isNotEmpty) _routePath = [];
     }
 
     return Column(
@@ -110,6 +149,16 @@ class _LiveMapViewState extends State<LiveMapView> {
                           'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                       retinaMode: true,
                     ),
+                    if (_routePath.isNotEmpty)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: _routePath,
+                            strokeWidth: 4,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
                     MarkerLayer(
                       markers: [
                         for (final t in trips)
@@ -271,12 +320,7 @@ class _LiveMapViewState extends State<LiveMapView> {
                         ),
                       )
                     : ListView(
-                        padding: EdgeInsets.only(
-                          left: 8,
-                          right: 8,
-                          top: 8,
-                          bottom: 16 + MediaQuery.of(context).padding.bottom + 80,
-                        ),
+                        padding: const EdgeInsets.all(8),
                         children: [
                           if (widget.isParentMode) ...[
                             if (selected != null)
