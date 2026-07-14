@@ -73,15 +73,16 @@ class _LiveMapViewState extends State<LiveMapView> {
     try {
       selected = trips.firstWhere((t) => t.locationId == _selectedTripId);
     } catch (_) {
-      if (widget.isParentMode && trips.isNotEmpty) {
-        selected = trips.first;
-        if (_selectedTripId == null) {
-          _selectedTripId = selected.locationId;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _selectTrip(selected!);
-          });
+        if (widget.isParentMode && trips.isNotEmpty) {
+          selected = trips.first;
+          if (_selectedTripId == null) {
+            _selectedTripId = selected.locationId;
+            _showMap = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _selectTrip(selected!);
+            });
+          }
         }
-      }
     }
     if (selected != null) {
       nextHalt = monitor.halts.isNotEmpty

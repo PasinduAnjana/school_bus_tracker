@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/halt.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/monitor_provider.dart';
-import '../../widgets/live_map_view.dart';
 import '../profile_screen.dart';
+import 'parent_home_page.dart';
+import 'parent_map_page.dart';
+import 'parent_halts_page.dart';
 
 class ParentShell extends StatefulWidget {
   const ParentShell({super.key});
@@ -13,7 +16,9 @@ class ParentShell extends StatefulWidget {
 }
 
 class _ParentShellState extends State<ParentShell> {
+  int _selectedIndex = 0;
   String? _selectedRouteId;
+  Halt? _focusHalt;
 
   @override
   void initState() {
@@ -23,6 +28,25 @@ class _ParentShellState extends State<ParentShell> {
       if (auth.currentUser != null) {
         context.read<MonitorProvider>().loadParentStudents(auth.currentUser!.id);
       }
+    });
+  }
+
+  Future<void> _onRouteSelected(String? routeId) async {
+    setState(() => _selectedRouteId = routeId);
+    if (routeId == null) return;
+    final monitor = context.read<MonitorProvider>();
+    await monitor.loadActiveTrips(routeId: routeId);
+    monitor.subscribe(routeId: routeId);
+    if (monitor.activeTrips.isNotEmpty) {
+      final trip = monitor.activeTrips.first;
+      await monitor.loadHalts(trip.routeId, trip.locationId);
+    }
+  }
+
+  void _onHaltTap(Halt halt) {
+    setState(() {
+      _focusHalt = halt;
+      _selectedIndex = 1;
     });
   }
 
@@ -39,121 +63,75 @@ class _ParentShellState extends State<ParentShell> {
 
     if (_selectedRouteId == null && routeAssignments.length == 1) {
       _selectedRouteId = routeAssignments.first.$1;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _onRouteSelected(_selectedRouteId);
+      });
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live Tracker'),
+        title: Text(
+          [
+            'Home',
+            'Live Map',
+            'Stops',
+          ][_selectedIndex],
+        ),
         actions: [
+          if (routeAssignments.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: DropdownButton<String>(
+                value: _selectedRouteId,
+                underline: const SizedBox.shrink(),
+                icon: Icon(
+                  Icons.swap_horiz,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                items: routeAssignments
+                    .map((r) => DropdownMenuItem(
+                          value: r.$1,
+                          child: Text(
+                            r.$2,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ))
+                    .toList(),
+                onChanged: _onRouteSelected,
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const ProfileScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
             ),
           ),
         ],
       ),
-      body: students.isEmpty
-          ? _EmptyState()
-          : routeAssignments.isEmpty
-              ? _NoBusAssigned(students: students)
-              : Column(
-                  children: [
-                    if (routeAssignments.length > 1)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedRouteId,
-                          decoration: const InputDecoration(
-                            labelText: 'Select bus to track',
-                            isDense: true,
-                          ),
-                          items: routeAssignments
-                              .map(
-                                (r) => DropdownMenuItem(
-                                  value: r.$1,
-                                  child: Text(r.$2),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _selectedRouteId = v),
-                        ),
-                      ),
-                    Expanded(
-                      child: LiveMapView(routeId: _selectedRouteId),
-                    ),
-                  ],
-                ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      body: IndexedStack(
+        index: _selectedIndex,
         children: [
-          Icon(
-            Icons.child_care_outlined,
-            size: 64,
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: 0.15),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No students linked to your account',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.4),
-            ),
-          ),
+          const ParentHomePage(),
+          ParentMapPage(focusHalt: _focusHalt),
+          ParentHaltsPage(onHaltTap: _onHaltTap),
         ],
       ),
-    );
-  }
-}
-
-class _NoBusAssigned extends StatelessWidget {
-  final List<dynamic> students;
-
-  const _NoBusAssigned({required this.students});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.directions_bus_outlined,
-            size: 64,
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: 0.15),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        destinations: [
+          NavigationDestination(
+            icon: Icon(_selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+            label: 'Home',
           ),
-          const SizedBox(height: 16),
-          Text(
-            students.length == 1
-                ? 'Your child has not been assigned a bus yet'
-                : 'Your children have not been assigned buses yet',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.4),
-            ),
+          NavigationDestination(
+            icon: Icon(_selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined),
+            label: 'Map',
+          ),
+          NavigationDestination(
+            icon: Icon(_selectedIndex == 2 ? Icons.location_on_rounded : Icons.location_on_outlined),
+            label: 'Stops',
           ),
         ],
       ),

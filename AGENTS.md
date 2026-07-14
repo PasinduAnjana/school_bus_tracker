@@ -58,9 +58,10 @@ RLS: SELECT = `auth.role() = 'authenticated'` on all tables. Admin write ops gat
 - **Notifications** — `flutter_local_notifications` v22. Android channels: `trip_status`, `bus_tracker_foreground`.
 - **Dev bypass** — Phone `0770000000`, code `4592` (documented in `setup.sh` for testing without SMS).
 - **seed.sql** — sample INSERTs **commented out** by default. Uncomment before `supabase db reset`.
-- **Test** — 1 file (`test/widget_test.dart`), basic smoke test. **Assertions are stale** (checks for "LOGIN" but button says "Continue"). No integration test infra.
+- **Test** — 1 file (`test/widget_test.dart`), basic smoke test. **Assertions are stale** (checks for "LOGIN" and a subtitle that don't match the current login screen). No integration test infra.
 - **Web** — `web/index.html` includes `flutter-passkeys` bundle.js (v2.4.0) from CDN. No passkey Dart code in `lib/`.
 - **Unused deps** — `flutter_svg` (`^2.0.10+1`) and `flutter_animate` (`^4.5.0`) are in `pubspec.yaml` but not imported in any Dart source.
+- **Linting** — `analysis_options.yaml` uses `package:flutter_lints/flutter.yaml` (not the newer `flutter_lints` v4+ recommended set).
 
 ## Provider architecture
 
