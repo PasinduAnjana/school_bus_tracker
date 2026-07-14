@@ -50,8 +50,8 @@ class _ParentMapPageState extends State<ParentMapPage> {
 
     final nextHalt = monitor.halts.isNotEmpty
         ? monitor.halts
-            .where((h) => !monitor.completedHaltIds.contains(h.id))
-            .firstOrNull
+              .where((h) => !monitor.completedHaltIds.contains(h.id))
+              .firstOrNull
         : null;
 
     if (trip == null) {
@@ -121,10 +121,10 @@ class _ParentMapPageState extends State<ParentMapPage> {
                             width: 14,
                             height: 14,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
+                              color: Theme.of(context).colorScheme.tertiary,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 width: 2,
                               ),
                             ),
@@ -153,10 +153,12 @@ class _ParentMapPageState extends State<ParentMapPage> {
                                 width: 22,
                                 height: 22,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFD700),
+                                  color: Theme.of(context).colorScheme.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
                                     width: 3,
                                   ),
                                 ),
@@ -170,9 +172,9 @@ class _ParentMapPageState extends State<ParentMapPage> {
                         point: LatLng(halt.latitude!, halt.longitude!),
                         width: 28,
                         height: 36,
-                        child: const Icon(
+                        child: Icon(
                           Icons.location_on,
-                          color: Color(0xFFFFD700),
+                          color: Theme.of(context).colorScheme.primary,
                           size: 28,
                         ),
                       ),
@@ -191,12 +193,17 @@ class _ParentMapPageState extends State<ParentMapPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.black54,
+              color: Theme.of(
+                context,
+              ).colorScheme.shadow.withValues(alpha: 0.54),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${trip.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${trip.recordedAt.toLocal().minute.toString().padLeft(2, '0')}:${trip.recordedAt.toLocal().second.toString().padLeft(2, '0')}',
-              style: const TextStyle(color: Colors.white, fontSize: 11),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.surface,
+                fontSize: 11,
+              ),
             ),
           ),
         ),
@@ -213,15 +220,18 @@ class _ParentMapPageState extends State<ParentMapPage> {
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFD700),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
                     nextHalt.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                   const Spacer(),
                   Text(
@@ -246,18 +256,23 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isStale
-              ? [Colors.orange, const Color(0xFFE65100)]
-              : [const Color(0xFF4CAF50), const Color(0xFF388E3C)],
+              ? [colorScheme.error, colorScheme.error.withValues(alpha: 0.8)]
+              : [
+                  colorScheme.tertiary,
+                  colorScheme.tertiary.withValues(alpha: 0.8),
+                ],
         ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: (isStale ? Colors.orange : const Color(0xFF4CAF50))
+            color: (isStale ? colorScheme.error : colorScheme.tertiary)
                 .withValues(alpha: 0.3),
             blurRadius: 8,
           ),
@@ -269,16 +284,16 @@ class _StatusBadge extends StatelessWidget {
           Container(
             width: 7,
             height: 7,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 5),
           Text(
             isStale ? 'STALE' : 'LIVE',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: colorScheme.surface,
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
@@ -310,12 +325,14 @@ class _PingRippleState extends State<_PingRipple>
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
-    _scale = Tween<double>(begin: 0.3, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _fade = Tween<double>(begin: 0.5, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.3,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fade = Tween<double>(
+      begin: 0.5,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
   }
 
@@ -334,8 +351,8 @@ class _PingRippleState extends State<_PingRipple>
         child: Opacity(
           opacity: _fade.value,
           child: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF4CAF50),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.tertiary,
               shape: BoxShape.circle,
             ),
           ),
@@ -365,12 +382,14 @@ class _NextHaltGlowState extends State<_NextHaltGlow>
       vsync: this,
       duration: const Duration(seconds: 2),
     );
-    _scale = Tween<double>(begin: 0.5, end: 1.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    _fade = Tween<double>(begin: 0.4, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.5,
+      end: 1.5,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _fade = Tween<double>(
+      begin: 0.4,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.repeat(reverse: true);
   }
 
@@ -389,8 +408,8 @@ class _NextHaltGlowState extends State<_NextHaltGlow>
         child: Opacity(
           opacity: _fade.value,
           child: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFD700),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
             ),
           ),

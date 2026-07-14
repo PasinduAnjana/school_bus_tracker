@@ -8,17 +8,20 @@ class OtpField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final defaultPinTheme = PinTheme(
       width: 60,
       height: 72,
-      textStyle: const TextStyle(
+      textStyle: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF1E1E1E),
+        color: colorScheme.onSurface,
       ),
       decoration: BoxDecoration(
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFF1E1E1E), width: 2),
+        border: Border(
+          bottom: BorderSide(color: colorScheme.onSurface, width: 2),
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -30,8 +33,8 @@ class OtpField extends StatelessWidget {
       defaultPinTheme: defaultPinTheme,
       focusedPinTheme: defaultPinTheme.copyWith(
         decoration: defaultPinTheme.decoration!.copyWith(
-          border: const Border(
-            bottom: BorderSide(color: Color(0xFFFFD700), width: 3),
+          border: Border(
+            bottom: BorderSide(color: colorScheme.primary, width: 3),
           ),
         ),
       ),

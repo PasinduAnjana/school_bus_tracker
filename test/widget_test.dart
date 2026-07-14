@@ -18,7 +18,7 @@ void main() {
       ),
     );
 
-    expect(find.text('LOGIN'), findsOneWidget);
-    expect(find.text('Enter your phone number to continue'), findsOneWidget);
+    expect(find.text('NID Express'), findsOneWidget);
+    expect(find.text('Enter your phone number to get started'), findsOneWidget);
   });
 }

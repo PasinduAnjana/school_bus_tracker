@@ -37,9 +37,7 @@ class _AdminShellState extends State<AdminShell> {
               icon: const Icon(Icons.person),
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ProfileScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
               ),
             ),
           ],

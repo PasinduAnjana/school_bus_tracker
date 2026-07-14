@@ -183,7 +183,9 @@ class AdminProvider extends ChangeNotifier {
             'id, name, parent_id, route_id, parent:users_whitelist!parent_id(phone_number), route:routes!route_id(name)',
           )
           .order('name');
-      _students = (data as List).map((e) => StudentWithParent.fromMap(e)).toList();
+      _students = (data as List)
+          .map((e) => StudentWithParent.fromMap(e))
+          .toList();
     } catch (e) {
       debugPrint('loadStudents error: $e');
     }
@@ -403,7 +405,6 @@ class AdminProvider extends ChangeNotifier {
       return false;
     }
   }
-
 
   Future<void> loadPayments(String month) async {
     _selectedMonth = month;

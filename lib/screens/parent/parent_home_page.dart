@@ -28,7 +28,9 @@ class ParentHomePage extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'No students linked',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -60,7 +62,9 @@ class ParentHomePage extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'No bus assigned yet',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -87,8 +91,8 @@ class ParentHomePage extends StatelessWidget {
 
     final nextHalt = monitor.halts.isNotEmpty
         ? monitor.halts
-            .where((h) => !monitor.completedHaltIds.contains(h.id))
-            .firstOrNull
+              .where((h) => !monitor.completedHaltIds.contains(h.id))
+              .firstOrNull
         : null;
 
     return Stack(
@@ -129,28 +133,27 @@ class _BackgroundGradient extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _BackgroundPainter(),
+      painter: _BackgroundPainter(Theme.of(context).colorScheme.primary),
       child: const SizedBox.expand(),
     );
   }
 }
 
 class _BackgroundPainter extends CustomPainter {
+  final Color primaryColor;
+  _BackgroundPainter(this.primaryColor);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          const Color(0xFFFFD700).withValues(alpha: 0.07),
-          Colors.transparent,
-        ],
+        colors: [primaryColor.withValues(alpha: 0.07), Colors.transparent],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
-    final circlePaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.04);
+    final circlePaint = Paint()..color = primaryColor.withValues(alpha: 0.04);
     canvas.drawCircle(
       Offset(size.width * 0.85, size.height * -0.1),
       size.width * 0.4,
@@ -186,13 +189,13 @@ class _ChildInfoCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.school_outlined,
                   size: 22,
-                  color: Color(0xFFFFD700),
+                  color: theme.colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -208,12 +211,14 @@ class _ChildInfoCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    ...students.map((s) => Text(
-                          s.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )),
+                    ...students.map(
+                      (s) => Text(
+                        s.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -225,7 +230,9 @@ class _ChildInfoCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -314,14 +321,18 @@ class _BusStatusCard extends StatelessWidget {
                     Row(
                       children: [
                         _PulseDot(
-                          color: t.isStale ? Colors.orange : const Color(0xFF4CAF50),
+                          color: t.isStale
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.tertiary,
                         ),
                         const SizedBox(width: 10),
                         Text(
                           t.isStale ? 'Signal lost' : 'Bus is on the way',
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: t.isStale ? Colors.orange : const Color(0xFF2E7D32),
+                            color: t.isStale
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.tertiary,
                           ),
                         ),
                       ],
@@ -388,8 +399,8 @@ class _ProgressCard extends StatelessWidget {
                   backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     progress == 1.0
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFFFFD700),
+                        ? theme.colorScheme.tertiary
+                        : theme.colorScheme.primary,
                   ),
                 ),
                 Text(
@@ -444,13 +455,13 @@ class _NextHaltCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+              color: theme.colorScheme.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.location_on_outlined,
               size: 18,
-              color: Color(0xFFFFD700),
+              color: theme.colorScheme.primary,
             ),
           ),
           const SizedBox(width: 14),
@@ -478,14 +489,14 @@ class _NextHaltCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+              color: theme.colorScheme.tertiary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               halt.arrivalTime,
               style: theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF4CAF50),
+                color: theme.colorScheme.tertiary,
               ),
             ),
           ),

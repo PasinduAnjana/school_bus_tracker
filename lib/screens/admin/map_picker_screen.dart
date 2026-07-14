@@ -126,7 +126,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             height: 60,
             child: MapPin(
               label: h.name,
-              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.6),
               size: 32,
             ),
           ),
@@ -201,7 +203,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -216,11 +218,13 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   Container(
                     constraints: const BoxConstraints(maxHeight: 250),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.shadow.withValues(alpha: 0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -234,9 +238,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         final r = _results[i];
                         return ListTile(
                           dense: true,
-                          leading: const Icon(
+                          leading: Icon(
                             Icons.place,
-                            color: Color(0xFFFFD700),
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           title: Text(
                             r['display_name'] as String,

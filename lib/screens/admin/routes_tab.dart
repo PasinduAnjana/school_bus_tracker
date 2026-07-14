@@ -74,9 +74,9 @@ class _RoutesTabState extends State<RoutesTab> {
           children: [
             Text(
               'Routes',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -88,21 +88,16 @@ class _RoutesTabState extends State<RoutesTab> {
                           Icon(
                             Icons.route_outlined,
                             size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.2),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.2),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             'No routes yet.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
+                                  color: Theme.of(context).colorScheme.onSurface
                                       .withValues(alpha: 0.4),
                                 ),
                           ),
@@ -117,13 +112,10 @@ class _RoutesTabState extends State<RoutesTab> {
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
-                              child: const Icon(
-                                Icons.route,
-                                size: 20,
-                              ),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              child: const Icon(Icons.route, size: 20),
                             ),
                             title: Text(
                               r.name,
@@ -134,9 +126,9 @@ class _RoutesTabState extends State<RoutesTab> {
                             subtitle: Text(
                               r.driverPhone ?? 'No driver assigned',
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                             trailing: Row(

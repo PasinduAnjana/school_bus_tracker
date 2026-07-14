@@ -36,9 +36,9 @@ class _DriverShellState extends State<DriverShell> {
       await driver.loadRoutes(auth.currentUser!.id);
       await driver.resumeActiveTrip(auth.currentUser!.id);
       if (driver.resumed && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Trip restored')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Trip restored')));
       }
     });
   }
@@ -47,13 +47,7 @@ class _DriverShellState extends State<DriverShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          [
-            'Driver Dashboard',
-            'Live Map',
-            'Stops',
-          ][_selectedIndex],
-        ),
+        title: Text(['Driver Dashboard', 'Live Map', 'Stops'][_selectedIndex]),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
@@ -77,15 +71,23 @@ class _DriverShellState extends State<DriverShell> {
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: [
           NavigationDestination(
-            icon: Icon(_selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+            icon: Icon(
+              _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+            ),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(_selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined),
+            icon: Icon(
+              _selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined,
+            ),
             label: 'Map',
           ),
           NavigationDestination(
-            icon: Icon(_selectedIndex == 2 ? Icons.location_on_rounded : Icons.location_on_outlined),
+            icon: Icon(
+              _selectedIndex == 2
+                  ? Icons.location_on_rounded
+                  : Icons.location_on_outlined,
+            ),
             label: 'Stops',
           ),
         ],

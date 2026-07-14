@@ -2,6 +2,10 @@
 
 Dart SDK `^3.12.2`, Flutter. Multi-platform (Android, iOS, Linux, macOS, Web, Windows). Material 3 light theme, gold (#FFD700) primary.
 
+## Skills to load
+
+Before starting any UI or Flutter task, load the relevant skill for project-specific guidance (flutter-*, ui-ux-pro-max).
+
 ## Commands
 
 | Action | Command |
@@ -19,8 +23,10 @@ lib/
   main.dart                     entrypoint — dotenv, Supabase init, MultiProvider
   app.dart                      Consumer<AuthProvider> → role-based shell or login
   config/                       SupabaseConfig (reads .env), AppTheme (M3 gold)
-  models/                       user, gps_location, halt, payment, route_model, student
+  models/                       user, gps_location, halt, payment, route_model, student (simple DTOs)
   providers/                    auth, admin, driver, monitor (all ChangeNotifier)
+                                admin_provider also defines WhitelistedUser, StudentWithParent,
+                                RouteWithDriver, PaymentWithStudent — used by monitor_provider too
   screens/                      login, otp, profile, admin/ (5 tabs), driver/, parent/
   services/                     supabase_client (singleton), location, notification, background
   utils/                        phone_utils (formatE164)
@@ -59,6 +65,7 @@ RLS: SELECT = `auth.role() = 'authenticated'` on all tables. Admin write ops gat
 - **Dev bypass** — Phone `0770000000`, code `4592` (documented in `setup.sh` for testing without SMS).
 - **seed.sql** — sample INSERTs **commented out** by default. Uncomment before `supabase db reset`.
 - **Test** — 1 file (`test/widget_test.dart`), basic smoke test. **Assertions are stale** (checks for "LOGIN" and a subtitle that don't match the current login screen). No integration test infra.
+- **App name** — `MaterialApp.title` is "NID Express" (set in `app.dart`). Login screen shows this, not "LOGIN".
 - **Web** — `web/index.html` includes `flutter-passkeys` bundle.js (v2.4.0) from CDN. No passkey Dart code in `lib/`.
 - **Unused deps** — `flutter_svg` (`^2.0.10+1`) and `flutter_animate` (`^4.5.0`) are in `pubspec.yaml` but not imported in any Dart source.
 - **Linting** — `analysis_options.yaml` uses `package:flutter_lints/flutter.yaml` (flutter_lints v6.0.0 in dev deps).

@@ -101,16 +101,16 @@ class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return IconThemeData(color: AppColors.onSurface, size: 22);
           }
-          return IconThemeData(
-            color: AppColors.onSurfaceVariant,
-            size: 22,
-          );
+          return IconThemeData(color: AppColors.onSurfaceVariant, size: 22);
         }),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceDim,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -159,9 +159,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.onPrimaryContainer,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
@@ -171,16 +169,12 @@ class AppTheme {
         space: 1,
       ),
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 4,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       pageTransitionsTheme: PageTransitionsTheme(
         builders: {

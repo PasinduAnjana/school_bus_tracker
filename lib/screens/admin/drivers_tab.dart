@@ -78,9 +78,9 @@ class _DriversTabState extends State<DriversTab> {
           children: [
             Text(
               'Drivers',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -92,21 +92,16 @@ class _DriversTabState extends State<DriversTab> {
                           Icon(
                             Icons.person_pin_outlined,
                             size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.2),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.2),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             'No drivers yet.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
+                                  color: Theme.of(context).colorScheme.onSurface
                                       .withValues(alpha: 0.4),
                                 ),
                           ),
@@ -125,14 +120,12 @@ class _DriversTabState extends State<DriversTab> {
                               vertical: 2,
                             ),
                             leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               child: const Text(
                                 'D',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                             title: Text(
@@ -151,9 +144,7 @@ class _DriversTabState extends State<DriversTab> {
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     title: const Text('Delete driver'),
-                                    content: Text(
-                                      'Delete ${d.phoneNumber}?',
-                                    ),
+                                    content: Text('Delete ${d.phoneNumber}?'),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>

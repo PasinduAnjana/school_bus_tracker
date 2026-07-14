@@ -322,8 +322,10 @@ class DriverProvider extends ChangeNotifier {
       if (halt.latitude == null || halt.longitude == null) continue;
 
       final dist = _haversine(
-        _currentLat!, _currentLng!,
-        halt.latitude!, halt.longitude!,
+        _currentLat!,
+        _currentLng!,
+        halt.latitude!,
+        halt.longitude!,
       );
 
       if (dist <= 5) {
@@ -345,8 +347,11 @@ class DriverProvider extends ChangeNotifier {
     const r = 6371000.0;
     final dLat = _toRadians(lat2 - lat1);
     final dLon = _toRadians(lon2 - lon1);
-    final a = _sin2(dLat / 2) +
-        math.cos(_toRadians(lat1)) * math.cos(_toRadians(lat2)) * _sin2(dLon / 2);
+    final a =
+        _sin2(dLat / 2) +
+        math.cos(_toRadians(lat1)) *
+            math.cos(_toRadians(lat2)) *
+            _sin2(dLon / 2);
     return r * 2 * math.asin(math.sqrt(a));
   }
 

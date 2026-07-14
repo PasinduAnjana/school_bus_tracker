@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
 class MapPin extends StatelessWidget {
-  final Color color;
+  final Color? color;
   final double size;
   final String? label;
 
-  const MapPin({
-    super.key,
-    this.color = const Color(0xFFFFD700),
-    this.size = 40,
-    this.label,
-  });
+  const MapPin({super.key, this.color, this.size = 40, this.label});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final pinColor = color ?? colorScheme.primary;
     final iconSize = size * 0.55;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -23,11 +22,11 @@ class MapPin extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 100),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: colorScheme.shadow.withValues(alpha: 0.15),
                   blurRadius: 2,
                 ),
               ],
@@ -35,19 +34,19 @@ class MapPin extends StatelessWidget {
             child: Text(
               label!,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
             ),
           ),
         Container(
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: color,
+            color: pinColor,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: colorScheme.surface, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
+                color: colorScheme.shadow.withValues(alpha: 0.25),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -55,7 +54,7 @@ class MapPin extends StatelessWidget {
           ),
           child: Icon(
             Icons.directions_bus,
-            color: Colors.white,
+            color: colorScheme.onPrimary,
             size: iconSize,
           ),
         ),

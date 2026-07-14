@@ -45,9 +45,9 @@ class _PaymentsTabState extends State<PaymentsTab> {
             children: [
               Text(
                 'Payments',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               SizedBox(
@@ -61,9 +61,7 @@ class _PaymentsTabState extends State<PaymentsTab> {
                     ),
                   ),
                   items: _months
-                      .map(
-                        (m) => DropdownMenuItem(value: m, child: Text(m)),
-                      )
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) {
                     if (v == null) return;
@@ -86,47 +84,42 @@ class _PaymentsTabState extends State<PaymentsTab> {
             child: admin.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : payments.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 48,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.2),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No payments found for this month.',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.4),
-                                  ),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 48,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.2),
                         ),
-                      )
-                    : ListView.separated(
-                        itemCount: payments.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (_, i) {
-                          final p = payments[i];
-                          return _PaymentCard(
-                            name: p.studentName,
-                            paid: p.paid,
-                            onToggle: (_) =>
-                                admin.togglePayment(p.id, p.paid),
-                          );
-                        },
-                      ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No payments found for this month.',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.4),
+                              ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: payments.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final p = payments[i];
+                      return _PaymentCard(
+                        name: p.studentName,
+                        paid: p.paid,
+                        onToggle: (_) => admin.togglePayment(p.id, p.paid),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -154,9 +147,7 @@ class _SummaryRow extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            color: AppColors.outline.withValues(alpha: 0.5),
-          ),
+          border: Border.all(color: AppColors.outline.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -266,9 +257,10 @@ class _PaymentCardState extends State<_PaymentCard>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _bgAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut),
-    );
+    _bgAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut));
     if (widget.paid) _animCtrl.value = 1;
   }
 

@@ -49,10 +49,7 @@ class _LiveMapViewState extends State<LiveMapView> {
     }
     setState(() => _selectedTripId = trip.locationId);
     context.read<MonitorProvider>().loadHalts(trip.routeId, trip.locationId);
-    _mapController.move(
-      LatLng(trip.latitude, trip.longitude),
-      14,
-    );
+    _mapController.move(LatLng(trip.latitude, trip.longitude), 14);
   }
 
   void _showTripOnMap(ActiveTrip trip) {
@@ -73,22 +70,22 @@ class _LiveMapViewState extends State<LiveMapView> {
     try {
       selected = trips.firstWhere((t) => t.locationId == _selectedTripId);
     } catch (_) {
-        if (widget.isParentMode && trips.isNotEmpty) {
-          selected = trips.first;
-          if (_selectedTripId == null) {
-            _selectedTripId = selected.locationId;
-            _showMap = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _selectTrip(selected!);
-            });
-          }
+      if (widget.isParentMode && trips.isNotEmpty) {
+        selected = trips.first;
+        if (_selectedTripId == null) {
+          _selectedTripId = selected.locationId;
+          _showMap = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _selectTrip(selected!);
+          });
         }
+      }
     }
     if (selected != null) {
       nextHalt = monitor.halts.isNotEmpty
           ? monitor.halts
-              .where((h) => !monitor.completedHaltIds.contains(h.id))
-              .firstOrNull
+                .where((h) => !monitor.completedHaltIds.contains(h.id))
+                .firstOrNull
           : null;
     }
 
@@ -116,16 +113,23 @@ class _LiveMapViewState extends State<LiveMapView> {
                         for (final t in trips)
                           Marker(
                             point: LatLng(t.latitude, t.longitude),
-                            width: selected?.locationId == t.locationId ? 48 : 36,
-                            height: selected?.locationId == t.locationId ? 48 : 36,
+                            width: selected?.locationId == t.locationId
+                                ? 48
+                                : 36,
+                            height: selected?.locationId == t.locationId
+                                ? 48
+                                : 36,
                             child: GestureDetector(
                               onTap: () => _selectTrip(t),
                               child: Icon(
                                 Icons.directions_bus_rounded,
                                 color: selected?.locationId == t.locationId
-                                    ? const Color(0xFFFFD700)
-                                    : Theme.of(context).colorScheme.primary,
-                                size: selected?.locationId == t.locationId ? 44 : 32,
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.primary
+                                          .withValues(alpha: 0.6),
+                                size: selected?.locationId == t.locationId
+                                    ? 44
+                                    : 32,
                               ),
                             ),
                           ),
@@ -134,16 +138,18 @@ class _LiveMapViewState extends State<LiveMapView> {
                             if (halt.latitude != null && halt.longitude != null)
                               Marker(
                                 point: LatLng(halt.latitude!, halt.longitude!),
-                                width: monitor.completedHaltIds.contains(halt.id)
+                                width:
+                                    monitor.completedHaltIds.contains(halt.id)
                                     ? 24
                                     : halt.id == nextHalt?.id
-                                        ? 44
-                                        : 32,
-                                height: monitor.completedHaltIds.contains(halt.id)
+                                    ? 44
+                                    : 32,
+                                height:
+                                    monitor.completedHaltIds.contains(halt.id)
                                     ? 30
                                     : halt.id == nextHalt?.id
-                                        ? 44
-                                        : 38,
+                                    ? 44
+                                    : 38,
                                 child: Stack(
                                   clipBehavior: Clip.none,
                                   children: [
@@ -174,9 +180,14 @@ class _LiveMapViewState extends State<LiveMapView> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black54,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.shadow.withValues(alpha: 0.54),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -186,14 +197,19 @@ class _LiveMapViewState extends State<LiveMapView> {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: selected.isStale ? Colors.orange : const Color(0xFF4CAF50),
+                              color: selected.isStale
+                                  ? Theme.of(context).colorScheme.error
+                                  : Theme.of(context).colorScheme.tertiary,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 5),
                           Text(
                             '${selected.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${selected.recordedAt.toLocal().minute.toString().padLeft(2, '0')}:${selected.recordedAt.toLocal().second.toString().padLeft(2, '0')}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.surface,
+                              fontSize: 10,
+                            ),
                           ),
                         ],
                       ),
@@ -215,22 +231,22 @@ class _LiveMapViewState extends State<LiveMapView> {
                             Icon(
                               Icons.bus_alert_outlined,
                               size: 48,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.2),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.2),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               widget.isParentMode
                                   ? 'Your bus is not active right now'
                                   : 'No active trips',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.4),
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.4),
+                                  ),
                             ),
                           ],
                         ),
@@ -244,14 +260,16 @@ class _LiveMapViewState extends State<LiveMapView> {
                             ...monitor.halts.map(
                               (halt) => _HaltTile(
                                 halt: halt,
-                                isCompleted:
-                                    monitor.completedHaltIds.contains(halt.id),
-                                onTap: halt.latitude != null &&
+                                isCompleted: monitor.completedHaltIds.contains(
+                                  halt.id,
+                                ),
+                                onTap:
+                                    halt.latitude != null &&
                                         halt.longitude != null
                                     ? () => _mapController.move(
-                                          LatLng(halt.latitude!, halt.longitude!),
-                                          16,
-                                        )
+                                        LatLng(halt.latitude!, halt.longitude!),
+                                        16,
+                                      )
                                     : null,
                               ),
                             ),
@@ -274,18 +292,26 @@ class _LiveMapViewState extends State<LiveMapView> {
                                             height: 8,
                                             decoration: BoxDecoration(
                                               color: t.isStale
-                                                  ? Colors.orange
-                                                  : const Color(0xFF4CAF50),
+                                                  ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.error
+                                                  : Theme.of(
+                                                      context,
+                                                    ).colorScheme.tertiary,
                                               shape: BoxShape.circle,
                                             ),
                                           ),
                                           if (t.isStale)
-                                            const Padding(
-                                              padding: EdgeInsets.only(left: 4),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 4,
+                                              ),
                                               child: Icon(
                                                 Icons.warning_amber_rounded,
                                                 size: 14,
-                                                color: Colors.orange,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.error,
                                               ),
                                             ),
                                           const SizedBox(width: 12),
@@ -318,23 +344,25 @@ class _LiveMapViewState extends State<LiveMapView> {
                                             '${t.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${t.recordedAt.toLocal().minute.toString().padLeft(2, '0')}',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           const SizedBox(width: 4),
                                           InkWell(
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                             onTap: () => _showTripOnMap(t),
                                             child: Padding(
                                               padding: const EdgeInsets.all(6),
                                               child: Icon(
                                                 Icons.map,
                                                 size: 18,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
                                               ),
                                             ),
                                           ),
@@ -345,7 +373,8 @@ class _LiveMapViewState extends State<LiveMapView> {
                                 ),
                               );
                             }),
-                            if (selected != null && monitor.halts.isNotEmpty) ...[
+                            if (selected != null &&
+                                monitor.halts.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Text(
                                 'Halts — ${selected.routeName}',
@@ -355,14 +384,18 @@ class _LiveMapViewState extends State<LiveMapView> {
                               ...monitor.halts.map(
                                 (halt) => _HaltTile(
                                   halt: halt,
-                                  isCompleted:
-                                      monitor.completedHaltIds.contains(halt.id),
-                                  onTap: halt.latitude != null &&
+                                  isCompleted: monitor.completedHaltIds
+                                      .contains(halt.id),
+                                  onTap:
+                                      halt.latitude != null &&
                                           halt.longitude != null
                                       ? () => _mapController.move(
-                                            LatLng(halt.latitude!, halt.longitude!),
-                                            16,
-                                          )
+                                          LatLng(
+                                            halt.latitude!,
+                                            halt.longitude!,
+                                          ),
+                                          16,
+                                        )
                                       : null,
                                 ),
                               ),
@@ -397,9 +430,9 @@ class _TripHeaderCard extends StatelessWidget {
             children: [
               Text(
                 trip.routeName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
               Row(
@@ -409,8 +442,8 @@ class _TripHeaderCard extends StatelessWidget {
                     height: 10,
                     decoration: BoxDecoration(
                       color: trip.isStale
-                          ? Colors.orange
-                          : const Color(0xFF4CAF50),
+                          ? Theme.of(context).colorScheme.error
+                          : Theme.of(context).colorScheme.tertiary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -419,8 +452,8 @@ class _TripHeaderCard extends StatelessWidget {
                     trip.isStale ? 'Signal lost' : 'Active',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: trip.isStale
-                          ? Colors.orange
-                          : const Color(0xFF4CAF50),
+                          ? Theme.of(context).colorScheme.error
+                          : Theme.of(context).colorScheme.tertiary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -439,8 +472,9 @@ class _TripHeaderCard extends StatelessWidget {
                   value: monitor.halts.isEmpty
                       ? 0
                       : monitor.completedHaltIds.length / monitor.halts.length,
-                  backgroundColor:
-                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -463,11 +497,7 @@ class _HaltTile extends StatelessWidget {
   final bool isCompleted;
   final VoidCallback? onTap;
 
-  const _HaltTile({
-    required this.halt,
-    required this.isCompleted,
-    this.onTap,
-  });
+  const _HaltTile({required this.halt, required this.isCompleted, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -480,18 +510,19 @@ class _HaltTile extends StatelessWidget {
         leading: CircleAvatar(
           radius: 14,
           backgroundColor: isCompleted
-              ? const Color(0xFF4CAF50)
-              : Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: 0.2),
+              ? Theme.of(context).colorScheme.tertiary
+              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           child: isCompleted
-              ? const Icon(Icons.check, size: 16, color: Colors.white)
+              ? Icon(
+                  Icons.check,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.surface,
+                )
               : Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD700),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -502,7 +533,11 @@ class _HaltTile extends StatelessWidget {
           style: const TextStyle(fontSize: 11),
         ),
         trailing: isCompleted
-            ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20)
+            ? Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.tertiary,
+                size: 20,
+              )
             : null,
       ),
     );
@@ -513,10 +548,7 @@ class _HaltMarker extends StatelessWidget {
   final bool isCompleted;
   final bool isNext;
 
-  const _HaltMarker({
-    required this.isCompleted,
-    this.isNext = false,
-  });
+  const _HaltMarker({required this.isCompleted, this.isNext = false});
 
   @override
   Widget build(BuildContext context) {
@@ -528,12 +560,17 @@ class _HaltMarker extends StatelessWidget {
             width: 14,
             height: 14,
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50),
+              color: Theme.of(context).colorScheme.tertiary,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surface,
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.tertiary.withValues(alpha: 0.4),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -545,8 +582,8 @@ class _HaltMarker extends StatelessWidget {
             child: Container(
               width: 9,
               height: 9,
-              decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.tertiary,
               ),
             ),
           ),
@@ -558,12 +595,17 @@ class _HaltMarker extends StatelessWidget {
         width: 22,
         height: 22,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFD700),
+          color: Theme.of(context).colorScheme.primary,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.surface,
+            width: 3,
+          ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.4),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -571,9 +613,9 @@ class _HaltMarker extends StatelessWidget {
         ),
       );
     }
-    return const Icon(
+    return Icon(
       Icons.location_on,
-      color: Color(0xFFFFD700),
+      color: Theme.of(context).colorScheme.primary,
       size: 28,
     );
   }
@@ -599,12 +641,14 @@ class _NextHaltGlowState extends State<_NextHaltGlow>
       vsync: this,
       duration: const Duration(seconds: 2),
     );
-    _scale = Tween<double>(begin: 0.5, end: 1.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    _fade = Tween<double>(begin: 0.4, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.5,
+      end: 1.5,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _fade = Tween<double>(
+      begin: 0.4,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.repeat(reverse: true);
   }
 
@@ -623,8 +667,8 @@ class _NextHaltGlowState extends State<_NextHaltGlow>
         child: Opacity(
           opacity: _fade.value,
           child: Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFD700),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
             ),
           ),

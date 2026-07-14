@@ -291,13 +291,13 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                   key: ValueKey(halt.id),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: const Color(
-                        0xFFFFD700,
-                      ).withValues(alpha: 0.2),
-                      child: const Icon(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.2),
+                      child: Icon(
                         Icons.schedule,
                         size: 18,
-                        color: Color(0xFF1E1E1E),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     title: Text(halt.name),
@@ -313,9 +313,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                       ],
                     ),
                     trailing: IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
-                        color: Color(0xFFFF5252),
+                        color: Theme.of(context).colorScheme.error,
                       ),
                       onPressed: () => admin.deleteHalt(halt.id),
                     ),

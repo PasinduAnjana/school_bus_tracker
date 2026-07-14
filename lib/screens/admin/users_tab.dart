@@ -36,7 +36,8 @@ class _UsersTabState extends State<UsersTab> {
             final admin = context.read<AdminProvider>();
 
             void onPhoneChanged(String value) {
-              final exists = value.trim().isNotEmpty &&
+              final exists =
+                  value.trim().isNotEmpty &&
                   admin.findUserByPhone(value.trim()) != null;
               final show = value.trim().isNotEmpty && !exists;
               if (show != showParentName) {
@@ -87,20 +88,18 @@ class _UsersTabState extends State<UsersTab> {
                         const SizedBox(height: 8),
                         Text(
                           'Parent already registered',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
+                          style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                         ),
                       ],
                       const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: selectedRouteId,
-                decoration: const InputDecoration(
-                  labelText: 'Select bus',
-                ),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedRouteId,
+                        decoration: const InputDecoration(
+                          labelText: 'Select bus',
+                        ),
                         items: [
                           const DropdownMenuItem(
                             value: null,
@@ -154,14 +153,16 @@ class _UsersTabState extends State<UsersTab> {
       return;
     }
 
-    final parentName =
-        showParentName ? parentNameCtrl.text.trim() : null;
+    final parentName = showParentName ? parentNameCtrl.text.trim() : null;
     parentNameCtrl.dispose();
 
     if (!mounted) return;
-    await context
-        .read<AdminProvider>()
-        .addStudentWithParent(name, phone, parentName, routeId: selectedRouteId);
+    await context.read<AdminProvider>().addStudentWithParent(
+      name,
+      phone,
+      parentName,
+      routeId: selectedRouteId,
+    );
   }
 
   Future<void> _showChangeBusDialog(StudentWithParent s) async {
@@ -177,23 +178,14 @@ class _UsersTabState extends State<UsersTab> {
               title: const Text('Change Bus'),
               content: DropdownButtonFormField<String>(
                 initialValue: selectedRouteId,
-                decoration: const InputDecoration(
-                  labelText: 'Select bus',
-                ),
+                decoration: const InputDecoration(labelText: 'Select bus'),
                 items: [
-                  const DropdownMenuItem(
-                    value: null,
-                    child: Text('None'),
-                  ),
+                  const DropdownMenuItem(value: null, child: Text('None')),
                   ...admin.routes.map(
-                    (r) => DropdownMenuItem(
-                      value: r.id,
-                      child: Text(r.name),
-                    ),
+                    (r) => DropdownMenuItem(value: r.id, child: Text(r.name)),
                   ),
                 ],
-                onChanged: (v) =>
-                    setDialogState(() => selectedRouteId = v),
+                onChanged: (v) => setDialogState(() => selectedRouteId = v),
               ),
               actions: [
                 TextButton(
@@ -213,9 +205,10 @@ class _UsersTabState extends State<UsersTab> {
 
     if (ok != true) return;
     if (!mounted) return;
-    await context
-        .read<AdminProvider>()
-        .updateStudentRoute(s.id, selectedRouteId);
+    await context.read<AdminProvider>().updateStudentRoute(
+      s.id,
+      selectedRouteId,
+    );
   }
 
   @override
@@ -230,9 +223,9 @@ class _UsersTabState extends State<UsersTab> {
           children: [
             Text(
               'Students',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -244,21 +237,16 @@ class _UsersTabState extends State<UsersTab> {
                           Icon(
                             Icons.school_outlined,
                             size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.2),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.2),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             'No students yet.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
+                                  color: Theme.of(context).colorScheme.onSurface
                                       .withValues(alpha: 0.4),
                                 ),
                           ),
@@ -273,18 +261,18 @@ class _UsersTabState extends State<UsersTab> {
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               child: Text(
                                 s.name.isNotEmpty
                                     ? s.name[0].toUpperCase()
                                     : '?',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
                                 ),
                               ),
                             ),
@@ -299,33 +287,32 @@ class _UsersTabState extends State<UsersTab> {
                                   ? 'Bus: ${s.routeName}'
                                   : (s.parentPhone ?? 'No parent'),
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.directions_bus_outlined),
+                                  icon: const Icon(
+                                    Icons.directions_bus_outlined,
+                                  ),
                                   tooltip: 'Change bus',
                                   onPressed: () => _showChangeBusDialog(s),
                                 ),
                                 IconButton(
                                   icon: Icon(
                                     Icons.delete_outline,
-                                    color:
-                                        Theme.of(context).colorScheme.error,
+                                    color: Theme.of(context).colorScheme.error,
                                   ),
                                   onPressed: () async {
                                     final ok = await showDialog<bool>(
                                       context: context,
                                       builder: (ctx) => AlertDialog(
-                                        title:
-                                            const Text('Delete student'),
-                                        content:
-                                            Text('Delete "${s.name}"?'),
+                                        title: const Text('Delete student'),
+                                        content: Text('Delete "${s.name}"?'),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>

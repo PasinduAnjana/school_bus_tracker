@@ -62,11 +62,12 @@ class ParentHaltsPage extends StatelessWidget {
                       CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 4,
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           progress == 1.0
-                              ? const Color(0xFF4CAF50)
-                              : const Color(0xFFFFD700),
+                              ? theme.colorScheme.tertiary
+                              : theme.colorScheme.primary,
                         ),
                       ),
                       Text(
@@ -121,9 +122,11 @@ class ParentHaltsPage extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                   side: isNext
-                      ? const BorderSide(color: Color(0xFFFFD700), width: 1.5)
+                      ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
                       : BorderSide(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          color: theme.colorScheme.outline.withValues(
+                            alpha: 0.3,
+                          ),
                         ),
                 ),
                 child: InkWell(
@@ -132,7 +135,10 @@ class ParentHaltsPage extends StatelessWidget {
                       ? () => onHaltTap?.call(halt)
                       : null,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         AnimatedContainer(
@@ -142,21 +148,27 @@ class ParentHaltsPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: done
-                                ? const Color(0xFF4CAF50)
+                                ? theme.colorScheme.tertiary
                                 : isNext
-                                    ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                                    : theme.colorScheme.surfaceContainerHighest,
+                                ? theme.colorScheme.primary.withValues(
+                                    alpha: 0.2,
+                                  )
+                                : theme.colorScheme.surfaceContainerHighest,
                           ),
                           alignment: Alignment.center,
                           child: done
-                              ? const Icon(Icons.check, size: 18, color: Colors.white)
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 18,
+                                  color: Colors.white,
+                                )
                               : Container(
                                   width: 8,
                                   height: 8,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isNext
-                                        ? const Color(0xFFFFD700)
+                                        ? theme.colorScheme.primary
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -169,7 +181,9 @@ class ParentHaltsPage extends StatelessWidget {
                               Text(
                                 halt.name,
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: isNext ? FontWeight.w700 : FontWeight.w500,
+                                  fontWeight: isNext
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -195,33 +209,39 @@ class ParentHaltsPage extends StatelessWidget {
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           child: done
-                              ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 22)
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: theme.colorScheme.tertiary,
+                                  size: 22,
+                                )
                               : isNext
-                                  ? Container(
-                                      key: const ValueKey('next'),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Text(
-                                        'NEXT',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF1E1E1E),
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.radio_button_unchecked,
-                                      color: Color(0xFFFFD700),
-                                      size: 22,
+                              ? Container(
+                                  key: const ValueKey('next'),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.15,
                                     ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'NEXT',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: theme.colorScheme.onSurface,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.radio_button_unchecked,
+                                  color: theme.colorScheme.primary,
+                                  size: 22,
+                                ),
                         ),
                       ],
                     ),

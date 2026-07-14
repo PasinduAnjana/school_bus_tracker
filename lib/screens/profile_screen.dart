@@ -19,7 +19,10 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32,
+                  horizontal: 20,
+                ),
                 child: Column(
                   children: [
                     CircleAvatar(
@@ -95,11 +98,7 @@ class _SettingItem extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  const _SettingItem({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-  });
+  const _SettingItem({required this.icon, required this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {

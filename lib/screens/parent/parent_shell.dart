@@ -74,13 +74,7 @@ class _ParentShellState extends State<ParentShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          [
-            'Home',
-            'Live Map',
-            'Stops',
-          ][_selectedIndex],
-        ),
+        title: Text(['Home', 'Live Map', 'Stops'][_selectedIndex]),
         actions: [
           if (routeAssignments.length > 1)
             Padding(
@@ -93,13 +87,15 @@ class _ParentShellState extends State<ParentShell> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 items: routeAssignments
-                    .map((r) => DropdownMenuItem(
-                          value: r.$1,
-                          child: Text(
-                            r.$2,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ))
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r.$1,
+                        child: Text(
+                          r.$2,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: _onRouteSelected,
               ),
@@ -126,15 +122,23 @@ class _ParentShellState extends State<ParentShell> {
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: [
           NavigationDestination(
-            icon: Icon(_selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+            icon: Icon(
+              _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+            ),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(_selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined),
+            icon: Icon(
+              _selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined,
+            ),
             label: 'Map',
           ),
           NavigationDestination(
-            icon: Icon(_selectedIndex == 2 ? Icons.location_on_rounded : Icons.location_on_outlined),
+            icon: Icon(
+              _selectedIndex == 2
+                  ? Icons.location_on_rounded
+                  : Icons.location_on_outlined,
+            ),
             label: 'Stops',
           ),
         ],

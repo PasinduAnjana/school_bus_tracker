@@ -27,7 +27,9 @@ class DriverHomePage extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'No route assigned',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -54,7 +56,10 @@ class DriverHomePage extends StatelessWidget {
               switchInCurve: Curves.easeOut,
               switchOutCurve: Curves.easeIn,
               child: driver.tripActive
-                  ? _ActiveTripContent(key: const ValueKey('active'), driver: driver)
+                  ? _ActiveTripContent(
+                      key: const ValueKey('active'),
+                      driver: driver,
+                    )
                   : _IdleContent(key: const ValueKey('idle'), driver: driver),
             ),
           ),
@@ -68,28 +73,27 @@ class _BackgroundGradient extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _BackgroundPainter(),
+      painter: _BackgroundPainter(Theme.of(context).colorScheme.primary),
       child: const SizedBox.expand(),
     );
   }
 }
 
 class _BackgroundPainter extends CustomPainter {
+  final Color primaryColor;
+  _BackgroundPainter(this.primaryColor);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          const Color(0xFFFFD700).withValues(alpha: 0.07),
-          Colors.transparent,
-        ],
+        colors: [primaryColor.withValues(alpha: 0.07), Colors.transparent],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
-    final circlePaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.04);
+    final circlePaint = Paint()..color = primaryColor.withValues(alpha: 0.04);
     canvas.drawCircle(
       Offset(size.width * 0.85, size.height * -0.1),
       size.width * 0.4,
@@ -127,10 +131,12 @@ class _IdleContent extends StatelessWidget {
                 if (v != null) driver.selectRoute(v);
               },
               dropdownMenuEntries: driver.routes
-                  .map((r) => DropdownMenuEntry(
-                        value: r['id'] as String,
-                        label: r['name'] as String,
-                      ))
+                  .map(
+                    (r) => DropdownMenuEntry(
+                      value: r['id'] as String,
+                      label: r['name'] as String,
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -140,7 +146,10 @@ class _IdleContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 FrostedCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 28,
+                  ),
                   borderRadius: 24,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -149,13 +158,15 @@ class _IdleContent extends StatelessWidget {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.12,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.directions_bus_rounded,
                           size: 30,
-                          color: const Color(0xFFFFD700),
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -163,13 +174,14 @@ class _IdleContent extends StatelessWidget {
                         'Ready to go',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        driver.selectedRouteId != null
-                            ? driver.selectedRouteName!
-                            : 'Select a route to begin',
+                        driver.routes.isEmpty
+                            ? 'No route assigned'
+                            : 'Select a route and press start',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -189,12 +201,12 @@ class _IdleContent extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.gps_off, size: 16, color: Color(0xFFFF5252)),
+                Icon(Icons.gps_off, size: 16, color: theme.colorScheme.error),
                 const SizedBox(width: 6),
                 Text(
                   'Enable GPS to start a trip',
                   style: TextStyle(
-                    color: const Color(0xFFFF5252),
+                    color: theme.colorScheme.error,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -232,9 +244,7 @@ class _ActiveTripContent extends StatelessWidget {
           child: _ProgressContent(driver: driver),
         ),
         Expanded(
-          child: Center(
-            child: _BigTripButton(driver: driver),
-          ),
+          child: Center(child: _BigTripButton(driver: driver)),
         ),
         if (driver.lastPing != null)
           Padding(
@@ -245,8 +255,8 @@ class _ActiveTripContent extends StatelessWidget {
                 Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF4CAF50),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.tertiary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -279,18 +289,18 @@ class _StatusBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF4CAF50).withValues(alpha: 0.12),
-            const Color(0xFF4CAF50).withValues(alpha: 0.04),
+            theme.colorScheme.tertiary.withValues(alpha: 0.12),
+            theme.colorScheme.tertiary.withValues(alpha: 0.04),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF4CAF50).withValues(alpha: 0.25),
+          color: theme.colorScheme.tertiary.withValues(alpha: 0.25),
         ),
       ),
       child: Row(
         children: [
-          _PulseDot(color: const Color(0xFF4CAF50)),
+          _PulseDot(color: theme.colorScheme.tertiary),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +309,7 @@ class _StatusBanner extends StatelessWidget {
                 'Trip Active',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2E7D32),
+                  color: theme.colorScheme.tertiary,
                 ),
               ),
               Text(
@@ -378,8 +388,11 @@ class _NextHaltContent extends StatelessWidget {
     try {
       final now = DateTime.now();
       final scheduled = DateTime(
-        now.year, now.month, now.day,
-        int.parse(parts[0]), int.parse(parts[1]),
+        now.year,
+        now.month,
+        now.day,
+        int.parse(parts[0]),
+        int.parse(parts[1]),
       );
       final diff = scheduled.difference(now);
       if (diff.isNegative) return 'Overdue';
@@ -402,11 +415,13 @@ class _NextHaltContent extends StatelessWidget {
     if (nextHalt == null) {
       return Column(
         children: [
-          Icon(Icons.check_circle, size: 40, color: const Color(0xFF4CAF50)),
+          Icon(Icons.check_circle, size: 40, color: theme.colorScheme.tertiary),
           const SizedBox(height: 8),
           Text(
             halts.isEmpty ? 'No halts on this route' : 'All halts completed!',
-            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       );
@@ -423,7 +438,7 @@ class _NextHaltContent extends StatelessWidget {
             Icon(
               Icons.tour_rounded,
               size: 18,
-              color: const Color(0xFFFFD700),
+              color: theme.colorScheme.primary,
             ),
             const SizedBox(width: 8),
             Text(
@@ -442,7 +457,9 @@ class _NextHaltContent extends StatelessWidget {
             Expanded(
               child: Text(
                 nextHalt.name,
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -450,15 +467,17 @@ class _NextHaltContent extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: isOverdue
-                    ? const Color(0xFFFF5252).withValues(alpha: 0.1)
-                    : const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    ? theme.colorScheme.error.withValues(alpha: 0.1)
+                    : theme.colorScheme.tertiary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 eta,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: isOverdue ? const Color(0xFFFF5252) : const Color(0xFF4CAF50),
+                  color: isOverdue
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.tertiary,
                 ),
               ),
             ),
@@ -510,7 +529,9 @@ class _ProgressContent extends StatelessWidget {
                 strokeWidth: 4,
                 backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  progress == 1.0 ? const Color(0xFF4CAF50) : const Color(0xFFFFD700),
+                  progress == 1.0
+                      ? theme.colorScheme.tertiary
+                      : theme.colorScheme.primary,
                 ),
               ),
               Text(
@@ -538,7 +559,9 @@ class _ProgressContent extends StatelessWidget {
                   const Spacer(),
                   Text(
                     '$completed / $total',
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -550,7 +573,9 @@ class _ProgressContent extends StatelessWidget {
                   minHeight: 6,
                   backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    progress == 1.0 ? const Color(0xFF4CAF50) : const Color(0xFFFFD700),
+                    progress == 1.0
+                        ? theme.colorScheme.tertiary
+                        : theme.colorScheme.primary,
                   ),
                 ),
               ),
@@ -590,7 +615,10 @@ class _BigTripButtonState extends State<_BigTripButton>
         vsync: this,
         duration: const Duration(milliseconds: 2000),
       )..repeat(reverse: true);
-      _pulseAnim = Tween<double>(begin: 0.0, end: 1.0).animate(_pulseController!);
+      _pulseAnim = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(_pulseController!);
     }
   }
 
@@ -603,7 +631,8 @@ class _BigTripButtonState extends State<_BigTripButton>
   @override
   Widget build(BuildContext context) {
     final isActive = widget.driver.tripActive;
-    final canStart = widget.driver.selectedRouteId != null && widget.driver.gpsReady;
+    final canStart =
+        widget.driver.selectedRouteId != null && widget.driver.gpsReady;
     final showPulse = !isActive && canStart && _pulseAnim != null;
 
     if (_starting) {
@@ -613,11 +642,14 @@ class _BigTripButtonState extends State<_BigTripButton>
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF388E3C)],
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+              ],
             ),
           ),
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -626,14 +658,14 @@ class _BigTripButtonState extends State<_BigTripButton>
                 height: 42,
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
                 'STARTING',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.4,
@@ -648,16 +680,15 @@ class _BigTripButtonState extends State<_BigTripButton>
     Widget button;
     if (isActive) {
       _starting = false;
-      button = _SlideToEnd(
-        onComplete: () => widget.driver.stopTrip(),
-      );
+      button = _SlideToEnd(onComplete: () => widget.driver.stopTrip());
     } else {
       button = GestureDetector(
         onTap: canStart
             ? () {
                 setState(() => _starting = true);
                 widget.driver.startTrip(
-                    context.read<AuthProvider>().currentUser!.id);
+                  context.read<AuthProvider>().currentUser!.id,
+                );
               }
             : null,
         child: AnimatedContainer(
@@ -666,31 +697,36 @@ class _BigTripButtonState extends State<_BigTripButton>
           height: 200,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFD700), Color(0xFFFFC107)],
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+              ],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: showPulse ? 0.5 : 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: showPulse ? 0.5 : 0.3),
                 blurRadius: showPulse ? 28 : 20,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.play_arrow_rounded,
-                color: Color(0xFF1E1E1E),
+                color: Theme.of(context).colorScheme.onPrimary,
                 size: 56,
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'START',
                 style: TextStyle(
-                  color: Color(0xFF1E1E1E),
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.4,
@@ -717,7 +753,9 @@ class _BigTripButtonState extends State<_BigTripButton>
                   height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.15 * (1.0 - pulseValue)),
+                    color: Theme.of(context).colorScheme.primary.withValues(
+                      alpha: 0.15 * (1.0 - pulseValue),
+                    ),
                   ),
                 ),
               ),
@@ -780,12 +818,17 @@ class _SlideToEndState extends State<_SlideToEnd> {
             height: 64,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF5252), Color(0xFFD32F2F)],
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.error,
+                  Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
+                ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF5252).withValues(alpha: 0.3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.error.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -805,8 +848,12 @@ class _SlideToEndState extends State<_SlideToEnd> {
                         borderRadius: BorderRadius.circular(32),
                         gradient: LinearGradient(
                           colors: [
-                            Colors.white.withValues(alpha: 1.0),
-                            Colors.white.withValues(alpha: 0.0),
+                            Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: 1.0),
+                            Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -817,7 +864,9 @@ class _SlideToEndState extends State<_SlideToEnd> {
                     child: Text(
                       'Slide to end trip',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: showProgress ? 0.9 : 0.7),
+                        color: Theme.of(context).colorScheme.surface.withValues(
+                          alpha: showProgress ? 0.9 : 0.7,
+                        ),
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -836,7 +885,10 @@ class _SlideToEndState extends State<_SlideToEnd> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.35 * _dragFraction.clamp(0.0, 1.0)),
+                            color: Theme.of(context).colorScheme.surface
+                                .withValues(
+                                  alpha: 0.35 * _dragFraction.clamp(0.0, 1.0),
+                                ),
                             blurRadius: 16,
                           ),
                         ],
@@ -851,18 +903,20 @@ class _SlideToEndState extends State<_SlideToEnd> {
                     height: thumbSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.shadow.withValues(alpha: 0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.chevron_right,
-                      color: Color(0xFFD32F2F),
+                      color: Theme.of(context).colorScheme.error,
                       size: 28,
                     ),
                   ),
@@ -875,4 +929,3 @@ class _SlideToEndState extends State<_SlideToEnd> {
     );
   }
 }
-

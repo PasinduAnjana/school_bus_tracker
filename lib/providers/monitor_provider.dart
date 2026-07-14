@@ -51,8 +51,6 @@ class MonitorProvider extends ChangeNotifier {
   final Map<String?, RealtimeChannel> _channels = {};
   List<StudentWithParent> _parentStudents = [];
 
-
-
   List<ActiveTrip> get activeTrips => _activeTrips;
   List<Halt> get halts => _halts;
   Set<String> get completedHaltIds => _completedHaltIds;
@@ -63,9 +61,7 @@ class MonitorProvider extends ChangeNotifier {
     try {
       final data = await SupabaseService.client
           .from('students')
-          .select(
-            'id, name, parent_id, route_id, route:routes!route_id(name)',
-          )
+          .select('id, name, parent_id, route_id, route:routes!route_id(name)')
           .eq('parent_id', parentId);
       _parentStudents = (data as List)
           .map((e) => StudentWithParent.fromMap(e as Map<String, dynamic>))
