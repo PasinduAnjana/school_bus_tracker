@@ -48,7 +48,7 @@ class MonitorProvider extends ChangeNotifier {
   List<ActiveTrip> _activeTrips = [];
   List<Halt> _halts = [];
   final Set<String> _completedHaltIds = {};
-  RealtimeChannel? _channel;
+  final Map<String?, RealtimeChannel> _channels = {};
   List<StudentWithParent> _parentStudents = [];
 
 
@@ -76,7 +76,7 @@ class MonitorProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadActiveTrips({String? routeId}) async {
+  Future<void> loadActiveTrips({String? routeId, bool merge = false}) async {
     try {
       var query = SupabaseService.client
           .from('live_locations')
@@ -89,9 +89,15 @@ class MonitorProvider extends ChangeNotifier {
         query = query.eq('route_id', routeId);
       }
       final data = await query.order('recorded_at', ascending: false);
-      _activeTrips = (data as List)
+      final newTrips = (data as List)
           .map((e) => ActiveTrip.fromMap(e as Map<String, dynamic>))
           .toList();
+      if (merge && routeId != null) {
+        _activeTrips.removeWhere((t) => t.routeId == routeId);
+        _activeTrips.addAll(newTrips);
+      } else {
+        _activeTrips = newTrips;
+      }
       notifyListeners();
     } catch (e) {
       debugPrint('loadActiveTrips error: $e');
@@ -99,7 +105,7 @@ class MonitorProvider extends ChangeNotifier {
   }
 
   void subscribe({String? routeId}) {
-    _channel?.unsubscribe();
+    if (_channels.containsKey(routeId)) return;
     final channel = SupabaseService.client
         .channel('monitor-active-trips-${routeId ?? 'all'}')
         .onPostgresChanges(
@@ -107,7 +113,7 @@ class MonitorProvider extends ChangeNotifier {
           schema: 'public',
           table: 'live_locations',
           callback: (_) {
-            loadActiveTrips(routeId: routeId);
+            loadActiveTrips(routeId: routeId, merge: routeId != null);
           },
         );
     if (routeId != null) {
@@ -123,12 +129,19 @@ class MonitorProvider extends ChangeNotifier {
         },
       );
     }
-    _channel = channel.subscribe();
+    _channels[routeId] = channel.subscribe();
   }
 
-  void cancel() {
-    _channel?.unsubscribe();
-    _channel = null;
+  void cancel({String? routeId}) {
+    if (routeId != null) {
+      _channels[routeId]?.unsubscribe();
+      _channels.remove(routeId);
+    } else {
+      for (final channel in _channels.values) {
+        channel.unsubscribe();
+      }
+      _channels.clear();
+    }
   }
 
   Future<void> loadHalts(String routeId, String liveLocationId) async {

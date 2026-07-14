@@ -5,13 +5,16 @@ import '../../providers/monitor_provider.dart';
 import '../../widgets/frosted_card.dart';
 
 class ParentHaltsPage extends StatelessWidget {
+  final String? routeId;
   final void Function(Halt halt)? onHaltTap;
-  const ParentHaltsPage({super.key, this.onHaltTap});
+  const ParentHaltsPage({super.key, this.routeId, this.onHaltTap});
 
   @override
   Widget build(BuildContext context) {
     final monitor = context.watch<MonitorProvider>();
     final theme = Theme.of(context);
+
+    final hasActiveTrip = monitor.activeTrips.any((t) => t.routeId == routeId);
 
     if (monitor.halts.isEmpty) {
       return Center(
@@ -25,9 +28,9 @@ class ParentHaltsPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              monitor.activeTrips.isEmpty
-                  ? 'Bus is not active right now'
-                  : 'No stops on this route',
+              hasActiveTrip
+                  ? 'No stops on this route'
+                  : 'Bus is not active right now',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

@@ -25,8 +25,10 @@ class _ParentShellState extends State<ParentShell> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = context.read<AuthProvider>();
+      final monitor = context.read<MonitorProvider>();
       if (auth.currentUser != null) {
-        context.read<MonitorProvider>().loadParentStudents(auth.currentUser!.id);
+        monitor.loadParentStudents(auth.currentUser!.id);
+        monitor.subscribe(); // Start "all routes" subscription for realtime
       }
     });
   }
@@ -35,10 +37,12 @@ class _ParentShellState extends State<ParentShell> {
     setState(() => _selectedRouteId = routeId);
     if (routeId == null) return;
     final monitor = context.read<MonitorProvider>();
-    await monitor.loadActiveTrips(routeId: routeId);
-    monitor.subscribe(routeId: routeId);
+    await monitor.loadActiveTrips(); // Load all trips; UI filters by routeId
     if (monitor.activeTrips.isNotEmpty) {
-      final trip = monitor.activeTrips.first;
+      final trip = monitor.activeTrips.firstWhere(
+        (t) => t.routeId == routeId,
+        orElse: () => monitor.activeTrips.first,
+      );
       await monitor.loadHalts(trip.routeId, trip.locationId);
     }
   }
@@ -112,9 +116,9 @@ class _ParentShellState extends State<ParentShell> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          const ParentHomePage(),
-          ParentMapPage(focusHalt: _focusHalt),
-          ParentHaltsPage(onHaltTap: _onHaltTap),
+          ParentHomePage(routeId: _selectedRouteId),
+          ParentMapPage(routeId: _selectedRouteId, focusHalt: _focusHalt),
+          ParentHaltsPage(routeId: _selectedRouteId, onHaltTap: _onHaltTap),
         ],
       ),
       bottomNavigationBar: NavigationBar(

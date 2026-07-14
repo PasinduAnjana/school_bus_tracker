@@ -4,7 +4,8 @@ import '../../providers/monitor_provider.dart';
 import '../../widgets/frosted_card.dart';
 
 class ParentHomePage extends StatelessWidget {
-  const ParentHomePage({super.key});
+  final String? routeId;
+  const ParentHomePage({super.key, this.routeId});
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +78,9 @@ class ParentHomePage extends StatelessWidget {
       );
     }
 
-    final trip = monitor.activeTrips.isNotEmpty ? monitor.activeTrips.first : null;
+    final trip = monitor.activeTrips
+        .where((t) => t.routeId == routeId)
+        .firstOrNull;
     final completed = monitor.completedHaltIds.length;
     final total = monitor.halts.length;
     final progress = total > 0 ? completed / total : 0.0;

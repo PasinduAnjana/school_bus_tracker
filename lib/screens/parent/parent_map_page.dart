@@ -8,7 +8,8 @@ import '../../widgets/frosted_card.dart';
 
 class ParentMapPage extends StatefulWidget {
   final Halt? focusHalt;
-  const ParentMapPage({super.key, this.focusHalt});
+  final String? routeId;
+  const ParentMapPage({super.key, this.focusHalt, this.routeId});
 
   @override
   State<ParentMapPage> createState() => _ParentMapPageState();
@@ -35,7 +36,9 @@ class _ParentMapPageState extends State<ParentMapPage> {
   @override
   Widget build(BuildContext context) {
     final monitor = context.watch<MonitorProvider>();
-    final trip = monitor.activeTrips.isNotEmpty ? monitor.activeTrips.first : null;
+    final trip = monitor.activeTrips
+        .where((t) => t.routeId == widget.routeId)
+        .firstOrNull;
     final theme = Theme.of(context);
 
     if (trip != null && !_centeredOnce) {
