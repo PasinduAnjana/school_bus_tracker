@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="school_bus_tracker"
+        android:label="NID Express"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <service

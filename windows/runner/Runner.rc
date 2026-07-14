@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "school_bus_tracker" "\0"
+            VALUE "CompanyName", "School Bus Tracker" "\0"
+            VALUE "FileDescription", "School Bus Tracker" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "school_bus_tracker" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 School Bus Tracker. All rights reserved." "\0"
             VALUE "OriginalFilename", "school_bus_tracker.exe" "\0"
-            VALUE "ProductName", "school_bus_tracker" "\0"
+            VALUE "ProductName", "School Bus Tracker" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

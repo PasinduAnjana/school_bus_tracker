@@ -41,7 +41,7 @@ class App extends StatelessWidget {
 
         return MaterialApp(
           key: ValueKey(auth.status),
-          title: 'School Bus Tracker',
+          title: 'NID Express',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           home: home,

@@ -15,7 +15,7 @@ void backgroundServiceEntrypoint() {
       onStart: _onStart,
       autoStart: false,
       isForegroundMode: true,
-      initialNotificationTitle: 'School Bus Tracker',
+      initialNotificationTitle: 'NID Express',
       initialNotificationContent: 'Trip tracking active',
       foregroundServiceNotificationId: _serviceNotificationId,
       foregroundServiceTypes: [AndroidForegroundType.location],
@@ -40,7 +40,7 @@ void _onStart(ServiceInstance service) async {
   service.on('updateNotification').listen((event) {
     if (service is AndroidServiceInstance && event is Map<String, dynamic>) {
       service.setForegroundNotificationInfo(
-        title: event['title'] as String? ?? 'School Bus Tracker',
+        title: event['title'] as String? ?? 'NID Express',
         content: event['content'] as String? ?? '',
       );
     }

@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                   const SizedBox(height: 28),
                   Text(
-                    'School Bus\nTracker',
+                    'NID Express',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       fontWeight: FontWeight.w800,
