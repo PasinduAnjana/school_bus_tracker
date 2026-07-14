@@ -7,6 +7,7 @@ import '../profile_screen.dart';
 import 'driver_home_page.dart';
 import 'driver_map_page.dart';
 import 'driver_stops_page.dart';
+import '../../widgets/frosted_nav_bar.dart';
 
 class DriverShell extends StatefulWidget {
   const DriverShell({super.key});
@@ -46,6 +47,7 @@ class _DriverShellState extends State<DriverShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
         title: Text(['Driver Dashboard', 'Live Map', 'Stops'][_selectedIndex]),
         actions: [
@@ -66,31 +68,11 @@ class _DriverShellState extends State<DriverShell> {
           DriverStopsPage(onHaltTap: _onHaltTap),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: FrostedNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
-            ),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined,
-            ),
-            label: 'Map',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 2
-                  ? Icons.location_on_rounded
-                  : Icons.location_on_outlined,
-            ),
-            label: 'Stops',
-          ),
-        ],
+        icons: const [Icons.home_rounded, Icons.map_rounded, Icons.location_on_rounded],
+        labels: const ['Home', 'Map', 'Stops'],
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../profile_screen.dart';
 import 'parent_home_page.dart';
 import 'parent_map_page.dart';
 import 'parent_halts_page.dart';
+import '../../widgets/frosted_nav_bar.dart';
 
 class ParentShell extends StatefulWidget {
   const ParentShell({super.key});
@@ -73,6 +74,7 @@ class _ParentShellState extends State<ParentShell> {
     }
 
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
         title: Text(['Home', 'Live Map', 'Stops'][_selectedIndex]),
         actions: [
@@ -117,31 +119,11 @@ class _ParentShellState extends State<ParentShell> {
           ParentHaltsPage(routeId: _selectedRouteId, onHaltTap: _onHaltTap),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: FrostedNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
-            ),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 1 ? Icons.map_rounded : Icons.map_outlined,
-            ),
-            label: 'Map',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              _selectedIndex == 2
-                  ? Icons.location_on_rounded
-                  : Icons.location_on_outlined,
-            ),
-            label: 'Stops',
-          ),
-        ],
+        icons: const [Icons.home_rounded, Icons.map_rounded, Icons.location_on_rounded],
+        labels: const ['Home', 'Map', 'Stops'],
       ),
     );
   }

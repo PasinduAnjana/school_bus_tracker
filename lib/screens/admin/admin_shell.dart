@@ -7,6 +7,7 @@ import 'monitor_tab.dart';
 import 'users_tab.dart';
 import 'payments_tab.dart';
 import 'routes_tab.dart';
+import '../../widgets/frosted_nav_bar.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -30,6 +31,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (_, auth, _) => Scaffold(
+        extendBody: true,
         appBar: AppBar(
           title: Text(_tabs[_index].label),
           actions: [
@@ -52,15 +54,11 @@ class _AdminShellState extends State<AdminShell> {
             MonitorTab(),
           ],
         ),
-        bottomNavigationBar: NavigationBar(
+        bottomNavigationBar: FrostedNavBar(
           selectedIndex: _index,
           onDestinationSelected: (i) => setState(() => _index = i),
-          destinations: _tabs
-              .map(
-                (t) =>
-                    NavigationDestination(icon: Icon(t.icon), label: t.label),
-              )
-              .toList(),
+          icons: _tabs.map((t) => t.icon).toList(),
+          labels: _tabs.map((t) => t.label).toList(),
         ),
       ),
     );
