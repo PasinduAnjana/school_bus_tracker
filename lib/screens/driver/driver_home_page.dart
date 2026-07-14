@@ -633,140 +633,149 @@ class _BigTripButtonState extends State<_BigTripButton>
     final isActive = widget.driver.tripActive;
     final canStart =
         widget.driver.selectedRouteId != null && widget.driver.gpsReady;
-    final showPulse = !isActive && canStart && _pulseAnim != null;
 
-    if (_starting) {
-      return SizedBox(
-        width: 200,
-        height: 200,
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-              ],
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 42,
-                height: 42,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'STARTING',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Widget button;
     if (isActive) {
-      _starting = false;
-      button = _SlideToEnd(onComplete: () => widget.driver.stopTrip());
-    } else {
-      button = GestureDetector(
-        onTap: canStart
-            ? () {
-                setState(() => _starting = true);
-                widget.driver.startTrip(
-                  context.read<AuthProvider>().currentUser!.id,
-                );
-              }
-            : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: showPulse ? 0.5 : 0.3),
-                blurRadius: showPulse ? 28 : 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.play_arrow_rounded,
-                color: Theme.of(context).colorScheme.onPrimary,
-                size: 56,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'START',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      if (_starting) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _starting = false);
+        });
+      }
+      return _SlideToEnd(onComplete: () => widget.driver.stopTrip());
     }
 
-    if (showPulse) {
-      return AnimatedBuilder(
-        animation: _pulseAnim!,
-        builder: (_, _) {
-          final pulseValue = _pulseAnim!.value;
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform.scale(
-                scale: 1.0 + pulseValue * 0.1,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.primary.withValues(
-                      alpha: 0.15 * (1.0 - pulseValue),
+    final showPulse = canStart && _pulseAnim != null && !_starting;
+
+    final buttonContent = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: _starting
+          ? Column(
+              key: const ValueKey('loading'),
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'STARTING',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              key: const ValueKey('idle'),
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.play_arrow_rounded,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  size: 56,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'START',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ],
+            ),
+    );
+
+    Widget button = GestureDetector(
+      onTap: (canStart && !_starting)
+          ? () {
+              setState(() => _starting = true);
+              widget.driver.startTrip(
+                context.read<AuthProvider>().currentUser!.id,
+              );
+            }
+          : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        width: _starting ? 160 : 200,
+        height: _starting ? 160 : 200,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primary.withValues(alpha: _starting ? 0.9 : 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.primary.withValues(
+                    alpha: _starting ? 0.15 : (showPulse ? 0.5 : 0.3),
+                  ),
+              blurRadius: _starting ? 8 : (showPulse ? 28 : 20),
+              offset: Offset(0, _starting ? 2 : 8),
+            ),
+          ],
+        ),
+        child: buttonContent,
+      ),
+    );
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (canStart && _pulseAnim != null)
+          AnimatedBuilder(
+            animation: _pulseAnim!,
+            builder: (_, _) {
+              final pulseValue = _pulseAnim!.value;
+              return AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: _starting ? 0.0 : 1.0,
+                child: Transform.scale(
+                  scale: 1.0 + pulseValue * 0.15,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).colorScheme.primary.withValues(
+                        alpha: 0.15 * (1.0 - pulseValue),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              button,
-            ],
-          );
-        },
-      );
-    }
-
-    return button;
+              );
+            },
+          )
+        else
+          const SizedBox(width: 200, height: 200),
+        button,
+      ],
+    );
   }
 }
 
@@ -778,25 +787,55 @@ class _SlideToEnd extends StatefulWidget {
   State<_SlideToEnd> createState() => _SlideToEndState();
 }
 
-class _SlideToEndState extends State<_SlideToEnd> {
+class _SlideToEndState extends State<_SlideToEnd> with SingleTickerProviderStateMixin {
   double _dragFraction = 0.0;
   bool _completed = false;
+  bool _isDragging = false;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _pulseAnimation = CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   void _onDragUpdate(DragUpdateDetails d, double width) {
     if (_completed) return;
     setState(() {
-      _dragFraction = (d.localPosition.dx / width).clamp(0.0, 1.1);
+      _isDragging = true;
+      _dragFraction = (d.localPosition.dx / width).clamp(0.0, 1.0);
     });
   }
 
   void _onDragEnd(double width) {
     if (_completed) return;
-    if (_dragFraction >= 0.85) {
-      _completed = true;
-      widget.onComplete();
+    setState(() {
+      _isDragging = false;
+    });
+    if (_dragFraction >= 0.8) {
+      setState(() {
+        _completed = true;
+        _dragFraction = 1.0;
+      });
+      Future.delayed(const Duration(milliseconds: 400), widget.onComplete);
     } else {
-      _dragFraction = 0.0;
-      if (mounted) setState(() {});
+      setState(() {
+        _dragFraction = 0.0;
+      });
     }
   }
 
@@ -807,122 +846,118 @@ class _SlideToEndState extends State<_SlideToEnd> {
         final width = constraints.maxWidth;
         final thumbSize = 52.0;
         final maxSlide = width - thumbSize - 8;
-        final thumbLeft = 4.0 + maxSlide * _dragFraction.clamp(0.0, 1.0);
-        final showProgress = _dragFraction > 0.0;
+        final thumbLeft = 4.0 + maxSlide * _dragFraction;
 
         return GestureDetector(
           onHorizontalDragUpdate: (d) => _onDragUpdate(d, width),
           onHorizontalDragEnd: (_) => _onDragEnd(width),
-          child: Container(
-            width: width,
-            height: 64,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.error,
-                  Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.error.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          child: AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, _) {
+              return Container(
+                width: width,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.error,
+                      Theme.of(context).colorScheme.error.withValues(alpha: 0.85),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.error.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                if (showProgress)
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: thumbLeft + thumbSize / 2,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(
-                              context,
-                            ).colorScheme.surface.withValues(alpha: 1.0),
-                            Theme.of(
-                              context,
-                            ).colorScheme.surface.withValues(alpha: 0.0),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    // Progress fill
+                    AnimatedPositioned(
+                      duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: thumbLeft + thumbSize / 2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(32),
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+                              Theme.of(context).colorScheme.surface.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Text
+                    Positioned.fill(
+                      child: Center(
+                        child: AnimatedSlide(
+                          duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+                          offset: Offset(_dragFraction * 0.2, 0),
+                          child: AnimatedOpacity(
+                            duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+                            opacity: (1.0 - (_dragFraction * 2.0)).clamp(0.0, 1.0),
+                            child: Text(
+                              'Slide to end trip',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.surface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Thumb
+                    AnimatedPositioned(
+                      duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+                      curve: Curves.easeOutBack,
+                      left: thumbLeft,
+                      top: 6,
+                      child: Container(
+                        width: thumbSize,
+                        height: thumbSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).colorScheme.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                            if (!_isDragging && !_completed)
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4 * _pulseAnimation.value),
+                                blurRadius: 12 + (10 * _pulseAnimation.value),
+                                spreadRadius: 2 * _pulseAnimation.value,
+                              ),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
-                Positioned.fill(
-                  child: Center(
-                    child: Text(
-                      'Slide to end trip',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.surface.withValues(
-                          alpha: showProgress ? 0.9 : 0.7,
-                        ),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-                if (showProgress)
-                  Positioned(
-                    left: thumbLeft - 6,
-                    top: 0,
-                    bottom: 0,
-                    width: thumbSize + 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(context).colorScheme.surface
-                                .withValues(
-                                  alpha: 0.35 * _dragFraction.clamp(0.0, 1.0),
-                                ),
-                            blurRadius: 16,
+                        child: Transform.translate(
+                          offset: Offset(!_isDragging && !_completed ? 4.0 * _pulseAnimation.value : 0, 0),
+                          child: Icon(
+                            _completed ? Icons.check_rounded : Icons.chevron_right_rounded,
+                            color: Theme.of(context).colorScheme.error,
+                            size: 32,
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                Positioned(
-                  left: thumbLeft,
-                  top: 6,
-                  child: Container(
-                    width: thumbSize,
-                    height: thumbSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Theme.of(context).colorScheme.surface,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.shadow.withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.error,
-                      size: 28,
-                    ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
