@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 class UpdateService {
   static const String _repoUrl =
@@ -66,27 +68,118 @@ class UpdateService {
       BuildContext context, String version, String url) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Force them to update
-      builder: (context) => AlertDialog(
-        title: const Text('Update Required'),
-        content: Text(
-            'A new version of the app ($version) is available. Please update to continue tracking.'),
-        actions: [
+      barrierDismissible: true, // Allow them to dismiss by tapping outside
+      builder: (context) => _UpdateDialog(version: version, url: url),
+    );
+  }
+}
+
+class _UpdateDialog extends StatefulWidget {
+  final String version;
+  final String url;
+
+  const _UpdateDialog({required this.version, required this.url});
+
+  @override
+  State<_UpdateDialog> createState() => _UpdateDialogState();
+}
+
+class _UpdateDialogState extends State<_UpdateDialog> {
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  String _statusMessage = 'A new version of the app (VERSION) is available. Please update to continue tracking.';
+
+  Future<void> _downloadAndInstall() async {
+    setState(() {
+      _isDownloading = true;
+      _statusMessage = 'Downloading update...';
+      _progress = 0.0;
+    });
+
+    try {
+      final request = http.Request('GET', Uri.parse(widget.url));
+      final http.StreamedResponse response = await http.Client().send(request);
+
+      final contentLength = response.contentLength;
+
+      // Save to a temporary directory
+      final directory = await getTemporaryDirectory();
+      final filePath = '${directory.path}/update_${widget.version}.apk';
+      final file = File(filePath);
+
+      final sink = file.openWrite();
+      int downloaded = 0;
+
+      await response.stream.map((chunk) {
+        downloaded += chunk.length;
+        if (contentLength != null) {
+          setState(() {
+            _progress = downloaded / contentLength;
+          });
+        }
+        return chunk;
+      }).pipe(sink);
+
+      setState(() {
+        _statusMessage = 'Opening installer...';
+      });
+
+      // Trigger the Android package installer popup
+      final result = await OpenFilex.open(filePath);
+      
+      if (result.type != ResultType.done) {
+        setState(() {
+          _isDownloading = false;
+          _statusMessage = 'Could not open installer: ${result.message}';
+        });
+      } else {
+        setState(() {
+          _isDownloading = false;
+          _progress = 0.0;
+          _statusMessage = 'Please complete the installation in the system prompt.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isDownloading = false;
+        _statusMessage = 'Download failed. Please try again.';
+      });
+      debugPrint('Download error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Update Available'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_statusMessage.replaceAll('VERSION', widget.version)),
+          if (_isDownloading) ...[
+            const SizedBox(height: 16),
+            LinearProgressIndicator(value: _progress > 0 ? _progress : null),
+            const SizedBox(height: 8),
+            Text('${(_progress * 100).toStringAsFixed(1)}%'),
+          ],
+        ],
+      ),
+      actions: [
+        if (!_isDownloading)
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Skip'),
+          ),
+        if (!_isDownloading)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
-            onPressed: () async {
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            },
-            child: const Text('Download Update'),
+            onPressed: _downloadAndInstall,
+            child: const Text('Download & Install'),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
