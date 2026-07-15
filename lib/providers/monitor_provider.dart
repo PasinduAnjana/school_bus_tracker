@@ -48,6 +48,9 @@ class MonitorProvider extends ChangeNotifier {
   List<ActiveTrip> _activeTrips = [];
   List<Halt> _halts = [];
   final Set<String> _completedHaltIds = {};
+
+  String? _lastLoadedRouteId;
+  String? _lastLoadedLocationId;
   final Map<String?, RealtimeChannel> _channels = {};
   List<StudentWithParent> _parentStudents = [];
 
@@ -112,26 +115,35 @@ class MonitorProvider extends ChangeNotifier {
             loadActiveTrips(routeId: routeId, merge: routeId != null);
           },
         );
-    if (routeId != null) {
-      channel.onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'trip_halts',
-        callback: (_) {
-          final trip = _activeTrips.where((t) => t.routeId == routeId);
-          for (final t in trip) {
-            loadHalts(t.routeId, t.locationId);
-          }
-        },
-      );
-    }
+    
+    final haltsChannel = SupabaseService.client
+        .channel('monitor-trip-halts-${routeId ?? 'all'}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'trip_halts',
+          callback: (_) {
+            if (_lastLoadedRouteId != null && _lastLoadedLocationId != null) {
+              loadHalts(_lastLoadedRouteId!, _lastLoadedLocationId!);
+            } else if (routeId != null) {
+              final trip = _activeTrips.where((t) => t.routeId == routeId);
+              for (final t in trip) {
+                loadHalts(t.routeId, t.locationId);
+              }
+            }
+          },
+        );
+
     _channels[routeId] = channel.subscribe();
+    _channels['${routeId}_halts'] = haltsChannel.subscribe();
   }
 
   void cancel({String? routeId}) {
     if (routeId != null) {
       _channels[routeId]?.unsubscribe();
+      _channels['${routeId}_halts']?.unsubscribe();
       _channels.remove(routeId);
+      _channels.remove('${routeId}_halts');
     } else {
       for (final channel in _channels.values) {
         channel.unsubscribe();
@@ -141,6 +153,8 @@ class MonitorProvider extends ChangeNotifier {
   }
 
   Future<void> loadHalts(String routeId, String liveLocationId) async {
+    _lastLoadedRouteId = routeId;
+    _lastLoadedLocationId = liveLocationId;
     try {
       final haltData = await SupabaseService.client
           .from('halts')
