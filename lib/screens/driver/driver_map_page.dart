@@ -8,6 +8,7 @@ import '../../providers/driver_provider.dart';
 import '../../services/route_service.dart';
 import '../../widgets/frosted_card.dart';
 import '../../widgets/map_pin.dart';
+import '../../widgets/slide_to_end.dart';
 
 class DriverMapPage extends StatefulWidget {
   final Halt? focusHalt;
@@ -269,7 +270,15 @@ class _NextHaltBanner extends StatelessWidget {
         ? halts.where((h) => !driver.completedHalts.contains(h.id)).firstOrNull
         : null;
 
-    if (nextHalt == null) return const SizedBox.shrink();
+    if (nextHalt == null) {
+      if (!driver.tripActive) return const SizedBox.shrink();
+      
+      return SlideToEnd(
+        onComplete: () {
+          driver.stopTrip();
+        },
+      ).animate().fadeIn().slideY(begin: 0.5, curve: Curves.easeOut);
+    }
 
     return FrostedCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

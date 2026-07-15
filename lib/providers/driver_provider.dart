@@ -329,7 +329,7 @@ class DriverProvider extends ChangeNotifier {
         halt.longitude!,
       );
 
-      if (dist <= 5) {
+      if (dist <= 100) {
         _completedHalts.add(halt.id);
         try {
           await SupabaseService.client.from('trip_halts').insert({
