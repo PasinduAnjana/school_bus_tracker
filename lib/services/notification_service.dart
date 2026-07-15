@@ -31,7 +31,6 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin
           >();
       if (android != null) {
-        await android.requestNotificationsPermission();
         await android.createNotificationChannel(
           const AndroidNotificationChannel(
             _tripStatusChannelId,
@@ -48,6 +47,18 @@ class NotificationService {
             importance: Importance.low,
           ),
         );
+      }
+    }
+  }
+
+  static Future<void> requestPermissions() async {
+    if (!kIsWeb) {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      if (android != null) {
+        await android.requestNotificationsPermission();
       }
     }
   }

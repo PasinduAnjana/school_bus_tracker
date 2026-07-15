@@ -15,12 +15,37 @@ import 'services/supabase_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
-  await SupabaseService.init();
-  await NotificationService.init();
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    backgroundServiceEntrypoint();
+  
+  try {
+    await dotenv.load();
+    await SupabaseService.init();
+    await NotificationService.init();
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      backgroundServiceEntrypoint();
+    }
+  } catch (e, stackTrace) {
+    debugPrint('Init Error: $e\n$stackTrace');
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Failed to initialize app:\n\n$e\n\n$stackTrace',
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        ),
+      ),
+    ));
+    return;
   }
+
+  // Request permissions safely AFTER the main init block
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    NotificationService.requestPermissions();
+  });
+
   runApp(
     MultiProvider(
       providers: [
