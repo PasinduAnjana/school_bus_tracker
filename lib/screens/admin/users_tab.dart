@@ -344,11 +344,14 @@ class _UsersTabState extends State<UsersTab> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'users_fab',
-        onPressed: _showAddStudentDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Student'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          heroTag: 'users_fab',
+          onPressed: _showAddStudentDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Student'),
+        ),
       ),
     );
   }

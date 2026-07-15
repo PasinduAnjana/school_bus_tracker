@@ -39,13 +39,8 @@ class _ParentShellState extends State<ParentShell> {
     if (routeId == null) return;
     final monitor = context.read<MonitorProvider>();
     await monitor.loadActiveTrips(); // Load all trips; UI filters by routeId
-    if (monitor.activeTrips.isNotEmpty) {
-      final trip = monitor.activeTrips.firstWhere(
-        (t) => t.routeId == routeId,
-        orElse: () => monitor.activeTrips.first,
-      );
-      await monitor.loadHalts(trip.routeId, trip.locationId);
-    }
+    final trip = monitor.activeTrips.where((t) => t.routeId == routeId).firstOrNull;
+    await monitor.loadHalts(routeId, trip?.locationId);
   }
 
   void _onHaltTap(Halt halt) {

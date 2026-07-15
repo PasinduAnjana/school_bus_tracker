@@ -111,8 +111,12 @@ class MonitorProvider extends ChangeNotifier {
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'live_locations',
-          callback: (_) {
-            loadActiveTrips(routeId: routeId, merge: routeId != null);
+          callback: (_) async {
+            await loadActiveTrips(routeId: routeId, merge: routeId != null);
+            if (_lastLoadedRouteId != null) {
+              final trip = _activeTrips.where((t) => t.routeId == _lastLoadedRouteId).firstOrNull;
+              loadHalts(_lastLoadedRouteId!, trip?.locationId);
+            }
           },
         );
     
@@ -123,8 +127,8 @@ class MonitorProvider extends ChangeNotifier {
           schema: 'public',
           table: 'trip_halts',
           callback: (_) {
-            if (_lastLoadedRouteId != null && _lastLoadedLocationId != null) {
-              loadHalts(_lastLoadedRouteId!, _lastLoadedLocationId!);
+            if (_lastLoadedRouteId != null) {
+              loadHalts(_lastLoadedRouteId!, _lastLoadedLocationId);
             } else if (routeId != null) {
               final trip = _activeTrips.where((t) => t.routeId == routeId);
               for (final t in trip) {
@@ -152,7 +156,7 @@ class MonitorProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadHalts(String routeId, String liveLocationId) async {
+  Future<void> loadHalts(String routeId, [String? liveLocationId]) async {
     _lastLoadedRouteId = routeId;
     _lastLoadedLocationId = liveLocationId;
     try {
@@ -163,15 +167,16 @@ class MonitorProvider extends ChangeNotifier {
           .order('arrival_time', ascending: true);
       _halts = (haltData as List).map((e) => Halt.fromMap(e)).toList();
 
-      final tripData = await SupabaseService.client
-          .from('trip_halts')
-          .select('halt_id')
-          .eq('live_location_id', liveLocationId);
       _completedHaltIds.clear();
-      for (final row in tripData as List) {
-        _completedHaltIds.add(row['halt_id'] as String);
+      if (liveLocationId != null) {
+        final tripData = await SupabaseService.client
+            .from('trip_halts')
+            .select('halt_id')
+            .eq('live_location_id', liveLocationId);
+        for (final row in tripData as List) {
+          _completedHaltIds.add(row['halt_id'] as String);
+        }
       }
-
       notifyListeners();
     } catch (e) {
       debugPrint('loadHalts error: $e');

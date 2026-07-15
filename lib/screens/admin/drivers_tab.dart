@@ -174,11 +174,14 @@ class _DriversTabState extends State<DriversTab> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'drivers_fab',
-        onPressed: _showAddDriverDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Driver'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          heroTag: 'drivers_fab',
+          onPressed: _showAddDriverDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Driver'),
+        ),
       ),
     );
   }

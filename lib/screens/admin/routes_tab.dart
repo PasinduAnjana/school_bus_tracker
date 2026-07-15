@@ -189,11 +189,14 @@ class _RoutesTabState extends State<RoutesTab> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'routes_fab',
-        onPressed: _showCreateRouteDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Route'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          heroTag: 'routes_fab',
+          onPressed: _showCreateRouteDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('Create Route'),
+        ),
       ),
     );
   }
