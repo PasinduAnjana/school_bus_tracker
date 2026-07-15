@@ -8,6 +8,7 @@ import 'screens/login_screen.dart';
 import 'screens/admin/admin_shell.dart';
 import 'screens/driver/driver_shell.dart';
 import 'screens/parent/parent_shell.dart';
+import 'services/update_service.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -44,9 +45,37 @@ class App extends StatelessWidget {
           title: 'NID Express',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
-          home: home,
+          home: _UpdateCheckerWrapper(child: home),
         );
       },
     );
+  }
+}
+
+class _UpdateCheckerWrapper extends StatefulWidget {
+  final Widget child;
+  const _UpdateCheckerWrapper({required this.child});
+
+  @override
+  State<_UpdateCheckerWrapper> createState() => _UpdateCheckerWrapperState();
+}
+
+class _UpdateCheckerWrapperState extends State<_UpdateCheckerWrapper> {
+  bool _checked = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_checked) {
+      _checked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        UpdateService.checkForUpdates(context);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
