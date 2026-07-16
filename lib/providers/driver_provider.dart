@@ -330,14 +330,22 @@ class DriverProvider extends ChangeNotifier {
       );
 
       if (dist <= 100) {
-        _completedHalts.add(halt.id);
-        try {
-          await SupabaseService.client.from('trip_halts').insert({
-            'live_location_id': _liveLocationId!,
-            'halt_id': halt.id,
-          });
-        } catch (e) {
-          debugPrint('auto-complete halt error: $e');
+        final currentIndex = _halts.indexOf(halt);
+        final missedHalts = _halts
+            .sublist(0, currentIndex + 1)
+            .where((h) => !_completedHalts.contains(h.id))
+            .toList();
+
+        for (final missedHalt in missedHalts) {
+          _completedHalts.add(missedHalt.id);
+          try {
+            await SupabaseService.client.from('trip_halts').insert({
+              'live_location_id': _liveLocationId!,
+              'halt_id': missedHalt.id,
+            });
+          } catch (e) {
+            debugPrint('auto-complete halt error: $e');
+          }
         }
       }
     }
