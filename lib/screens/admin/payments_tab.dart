@@ -128,8 +128,8 @@ class _PaymentsTabState extends State<PaymentsTab> {
   }
 }
 
-Color _paidColor = AppColors.primary;
-Color _unpaidColor = AppColors.onSurfaceVariant;
+Color get _paidColor => AppColors.primary;
+Color get _unpaidColor => AppColors.onSurfaceVariant;
 
 class _SummaryRow extends StatelessWidget {
   final int total;

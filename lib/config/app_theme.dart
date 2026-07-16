@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class AppColors {
-  AppColors._();
+class AppColorsGold {
+  AppColorsGold._();
 
   static const primary = Color(0xFFFFD700);
   static const onPrimary = Color(0xFF1E1E1E);
@@ -21,6 +21,30 @@ class AppColors {
   static const outlineVariant = Color(0xFFF0F0F0);
   static const success = Color(0xFF4CAF50);
   static const error = Color(0xFFFF5252);
+  static const onError = Color(0xFFFFFFFF);
+  static const shadow = Color(0xFF000000);
+}
+
+class AppColors {
+  AppColors._();
+
+  static const primary = Color(0xFF2563EB); // Blue 600
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const primaryContainer = Color(0xFFDBEAFE); // Blue 100
+  static const onPrimaryContainer = Color(0xFF1E3A8A); // Blue 900
+  static const secondary = Color(0xFFFFD700); // Gold
+  static const onSecondary = Color(0xFF1E1E1E);
+  static const secondaryContainer = Color(0xFFFFF8E1);
+  static const tertiary = Color(0xFF059669);
+  static const background = Color(0xFFF8FAFC); // Slate 50
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceDim = Color(0xFFF1F5F9); // Slate 100
+  static const onSurface = Color(0xFF0F172A); // Slate 900
+  static const onSurfaceVariant = Color(0xFF475569); // Slate 600
+  static const outline = Color(0xFFCBD5E1); // Slate 300
+  static const outlineVariant = Color(0xFFE2E8F0); // Slate 200
+  static const success = Color(0xFF10B981); // Emerald 500
+  static const error = Color(0xFFEF4444); // Red 500
   static const onError = Color(0xFFFFFFFF);
   static const shadow = Color(0xFF000000);
 }
