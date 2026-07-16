@@ -24,26 +24,47 @@ class _DriverMapPageState extends State<DriverMapPage> {
 
   String? _lastTripLoc;
   String? _lastHaltLoc;
-  List<LatLng> _routePath = [];
+  List<LatLng> _nextHaltPath = [];
+  List<LatLng> _remainingPath = [];
 
-  void _checkAndFetchRoute(double tripLat, double tripLng, Halt? nextHalt) {
-    if (nextHalt?.latitude == null || nextHalt?.longitude == null) {
-      if (_routePath.isNotEmpty && mounted) setState(() => _routePath = []);
+  void _checkAndFetchRoute(double tripLat, double tripLng, List<Halt> nextHalts) async {
+    if (nextHalts.isEmpty) {
+      if (_nextHaltPath.isNotEmpty && mounted) {
+        setState(() {
+          _nextHaltPath = [];
+          _remainingPath = [];
+        });
+      }
       return;
     }
 
     final tLoc = '${tripLat.toStringAsFixed(3)},${tripLng.toStringAsFixed(3)}';
-    final hLoc = '${nextHalt!.latitude},${nextHalt.longitude}';
+    final hLoc = nextHalts.map((h) => '${h.latitude},${h.longitude}').join('|');
 
     if (_lastTripLoc != tLoc || _lastHaltLoc != hLoc) {
       _lastTripLoc = tLoc;
       _lastHaltLoc = hLoc;
-      RouteService.getRoute(
-        LatLng(tripLat, tripLng),
-        LatLng(nextHalt.latitude!, nextHalt.longitude!),
-      ).then((path) {
-        if (mounted) setState(() => _routePath = path);
-      });
+      
+      final validHalts = nextHalts
+          .where((h) => h.latitude != null && h.longitude != null)
+          .map((h) => LatLng(h.latitude!, h.longitude!))
+          .toList();
+
+      if (validHalts.isEmpty) return;
+
+      final path1 = await RouteService.getRoute([LatLng(tripLat, tripLng), validHalts.first]);
+      
+      List<LatLng> path2 = [];
+      if (validHalts.length > 1) {
+        path2 = await RouteService.getRoute(validHalts);
+      }
+
+      if (mounted) {
+        setState(() {
+          _nextHaltPath = path1;
+          _remainingPath = path2;
+        });
+      }
     }
   }
 
@@ -73,14 +94,13 @@ class _DriverMapPageState extends State<DriverMapPage> {
       });
     }
 
-    final nextHalt = driver.halts.isNotEmpty
-        ? driver.halts
-              .where((h) => !driver.completedHalts.contains(h.id))
-              .firstOrNull
-        : null;
+    final uncompletedHalts = driver.halts
+        .where((h) => !driver.completedHalts.contains(h.id))
+        .toList();
+    final nextHalt = uncompletedHalts.firstOrNull;
 
     if (driver.currentLat != null && driver.currentLng != null) {
-      _checkAndFetchRoute(driver.currentLat!, driver.currentLng!, nextHalt);
+      _checkAndFetchRoute(driver.currentLat!, driver.currentLng!, uncompletedHalts);
     }
 
     return Stack(
@@ -100,14 +120,21 @@ class _DriverMapPageState extends State<DriverMapPage> {
                   'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
               retinaMode: true,
             ),
-            if (_routePath.isNotEmpty)
+            if (_remainingPath.isNotEmpty || _nextHaltPath.isNotEmpty)
               PolylineLayer(
                 polylines: [
-                  Polyline(
-                    points: _routePath,
-                    strokeWidth: 4,
-                    color: theme.colorScheme.primary,
-                  ),
+                  if (_remainingPath.isNotEmpty)
+                    Polyline(
+                      points: _remainingPath,
+                      strokeWidth: 4,
+                      color: Colors.black,
+                    ),
+                  if (_nextHaltPath.isNotEmpty)
+                    Polyline(
+                      points: _nextHaltPath,
+                      strokeWidth: 5,
+                      color: theme.colorScheme.primary,
+                    ),
                 ],
               ),
             if (driver.currentLat != null && driver.currentLng != null)

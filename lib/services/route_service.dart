@@ -10,17 +10,20 @@ class RouteService {
   // Key format: "startLat,startLng|endLat,endLng" (rounded for cache hits)
   static final Map<String, List<LatLng>> _cache = {};
 
-  /// Fetches a route between two points using OSRM.
-  static Future<List<LatLng>> getRoute(LatLng start, LatLng end) async {
-    // A simple rounding to avoid fetching again if the start point is virtually the same
-    final cacheKey = '${start.latitude.toStringAsFixed(4)},${start.longitude.toStringAsFixed(4)}|${end.latitude},${end.longitude}';
+  /// Fetches a route between multiple points using OSRM.
+  static Future<List<LatLng>> getRoute(List<LatLng> waypoints) async {
+    if (waypoints.length < 2) return [];
+
+    // A simple rounding to avoid fetching again if the points are virtually the same
+    final cacheKey = waypoints.map((w) => '${w.latitude.toStringAsFixed(4)},${w.longitude.toStringAsFixed(4)}').join('|');
     if (_cache.containsKey(cacheKey)) {
       return _cache[cacheKey]!;
     }
 
     try {
+      final coordsString = waypoints.map((w) => '${w.longitude},${w.latitude}').join(';');
       final url = Uri.parse(
-          '$_baseUrl/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson');
+          '$_baseUrl/$coordsString?overview=full&geometries=geojson');
       
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
