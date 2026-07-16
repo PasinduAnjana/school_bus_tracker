@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/halt.dart';
 import '../../providers/monitor_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/halt_tile.dart';
 
 class ParentHaltsPage extends StatelessWidget {
   final String? routeId;
@@ -116,126 +117,13 @@ class ParentHaltsPage extends StatelessWidget {
                   .firstOrNull;
               final isNext = !done && halt.id == nextHalt?.id;
 
-              return FrostedCard(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: halt.latitude != null && halt.longitude != null
-                      ? () => onHaltTap?.call(halt)
-                      : null,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 400),
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: done
-                                ? theme.colorScheme.tertiary
-                                : isNext
-                                ? theme.colorScheme.primary.withValues(
-                                    alpha: 0.2,
-                                  )
-                                : theme.colorScheme.surfaceContainerHighest,
-                          ),
-                          alignment: Alignment.center,
-                          child: done
-                              ? const Icon(
-                                  Icons.check,
-                                  size: 18,
-                                  color: Colors.white,
-                                )
-                              : Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isNext
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                halt.name,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: isNext
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.schedule,
-                                    size: 12,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    halt.arrivalTime,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: done
-                              ? Icon(
-                                  Icons.check_circle,
-                                  color: theme.colorScheme.tertiary,
-                                  size: 22,
-                                )
-                              : isNext
-                              ? Container(
-                                  key: const ValueKey('next'),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.15,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'NEXT',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                      color: theme.colorScheme.onSurface,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.radio_button_unchecked,
-                                  color: theme.colorScheme.primary,
-                                  size: 22,
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              return HaltTile(
+                halt: halt,
+                isDone: done,
+                isNext: isNext,
+                onTap: halt.latitude != null && halt.longitude != null
+                    ? () => onHaltTap?.call(halt)
+                    : null,
               );
             },
           ),

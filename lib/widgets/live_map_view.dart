@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/halt.dart';
 import '../providers/monitor_provider.dart';
 import '../services/route_service.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'frosted_card.dart';
 import 'map_pin.dart';
+import 'halt_tile.dart';
 
 class LiveMapView extends StatefulWidget {
   final String? routeId;
@@ -358,11 +359,12 @@ class _LiveMapViewState extends State<LiveMapView> {
                             if (selected != null)
                               _TripHeaderCard(trip: selected, monitor: monitor),
                             ...monitor.halts.map(
-                              (halt) => _HaltTile(
+                              (halt) => HaltTile(
                                 halt: halt,
-                                isCompleted: monitor.completedHaltIds.contains(
+                                isDone: monitor.completedHaltIds.contains(
                                   halt.id,
                                 ),
+                                isNext: halt.id == nextHalt?.id,
                                 onTap:
                                     halt.latitude != null &&
                                         halt.longitude != null
@@ -482,10 +484,11 @@ class _LiveMapViewState extends State<LiveMapView> {
                               ),
                               const SizedBox(height: 4),
                               ...monitor.halts.map(
-                                (halt) => _HaltTile(
+                                (halt) => HaltTile(
                                   halt: halt,
-                                  isCompleted: monitor.completedHaltIds
+                                  isDone: monitor.completedHaltIds
                                       .contains(halt.id),
+                                  isNext: halt.id == nextHalt?.id,
                                   onTap:
                                       halt.latitude != null &&
                                           halt.longitude != null
@@ -592,57 +595,7 @@ class _TripHeaderCard extends StatelessWidget {
   }
 }
 
-class _HaltTile extends StatelessWidget {
-  final Halt halt;
-  final bool isCompleted;
-  final VoidCallback? onTap;
 
-  const _HaltTile({required this.halt, required this.isCompleted, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return FrostedCard(
-      margin: const EdgeInsets.only(bottom: 4),
-      child: ListTile(
-        enabled: onTap != null,
-        onTap: onTap,
-        dense: true,
-        leading: CircleAvatar(
-          radius: 14,
-          backgroundColor: isCompleted
-              ? Theme.of(context).colorScheme.tertiary
-              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-          child: isCompleted
-              ? Icon(
-                  Icons.check,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.surface,
-                )
-              : Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-        ),
-        title: Text(halt.name, style: const TextStyle(fontSize: 13)),
-        subtitle: Text(
-          'Arrival: ${halt.arrivalTime}${halt.latitude != null ? '  •  ${halt.latitude!.toStringAsFixed(4)}, ${halt.longitude!.toStringAsFixed(4)}' : ''}',
-          style: const TextStyle(fontSize: 11),
-        ),
-        trailing: isCompleted
-            ? Icon(
-                Icons.check_circle,
-                color: Theme.of(context).colorScheme.tertiary,
-                size: 20,
-              )
-            : null,
-      ),
-    );
-  }
-}
 
 class _HaltMarker extends StatelessWidget {
   final bool isCompleted;
