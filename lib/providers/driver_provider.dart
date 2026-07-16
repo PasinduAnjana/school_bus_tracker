@@ -58,6 +58,7 @@ class DriverProvider extends ChangeNotifier {
       if (loc.latitude != null && loc.longitude != null) {
         _currentLat = loc.latitude;
         _currentLng = loc.longitude;
+        _checkHaltProximity();
         notifyListeners();
       }
     });
