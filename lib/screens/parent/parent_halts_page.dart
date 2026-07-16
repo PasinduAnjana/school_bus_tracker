@@ -121,6 +121,7 @@ class ParentHaltsPage extends StatelessWidget {
                 halt: halt,
                 isDone: done,
                 isNext: isNext,
+                isTripActive: hasActiveTrip,
                 onTap: halt.latitude != null && halt.longitude != null
                     ? () => onHaltTap?.call(halt)
                     : null,

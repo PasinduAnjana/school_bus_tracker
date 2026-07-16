@@ -6,6 +6,7 @@ class HaltTile extends StatelessWidget {
   final Halt halt;
   final bool isDone;
   final bool isNext;
+  final bool isTripActive;
   final VoidCallback? onTap;
 
   const HaltTile({
@@ -13,11 +14,14 @@ class HaltTile extends StatelessWidget {
     required this.halt,
     required this.isDone,
     required this.isNext,
+    this.isTripActive = true,
     this.onTap,
   });
 
-  String _getTimingStatus(String arrivalTime, bool isDone) {
+  String _getTimingStatus(String arrivalTime, bool isDone, bool isTripActive) {
     if (isDone) return 'Completed';
+    if (!isTripActive) return 'Expected $arrivalTime';
+    
     try {
       final now = DateTime.now();
       final parts = arrivalTime.split(':');
@@ -52,7 +56,7 @@ class HaltTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final status = _getTimingStatus(halt.arrivalTime, isDone);
+    final status = _getTimingStatus(halt.arrivalTime, isDone, isTripActive);
     final statusColor = _getStatusColor(theme, status);
 
     return FrostedCard(
