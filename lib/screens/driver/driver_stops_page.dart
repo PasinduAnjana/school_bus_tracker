@@ -38,7 +38,9 @@ class DriverStopsPage extends StatelessWidget {
       );
     }
 
-    final completed = driver.completedHalts.length;
+    final maxCompletedIndex = driver.halts
+        .lastIndexWhere((h) => driver.completedHalts.contains(h.id));
+    final completed = maxCompletedIndex + 1;
     final total = driver.halts.length;
     final progress = total > 0 ? completed / total : 0.0;
 
@@ -55,23 +57,20 @@ class DriverStopsPage extends StatelessWidget {
                   width: 48,
                   height: 48,
                   child: Stack(
-                    alignment: Alignment.center,
+                    fit: StackFit.expand,
                     children: [
                       CircularProgressIndicator(
                         value: progress,
+                        backgroundColor: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.1),
                         strokeWidth: 4,
-                        backgroundColor:
-                            theme.colorScheme.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          progress == 1.0
-                              ? theme.colorScheme.tertiary
-                              : theme.colorScheme.primary,
-                        ),
                       ),
-                      Text(
-                        '${(progress * 100).round()}%',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                      Center(
+                        child: Text(
+                          '$completed/$total',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -83,15 +82,16 @@ class DriverStopsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        driver.selectedRouteName ?? 'Route',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        'Route Progress',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        '$completed of $total halts completed',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        completed == total
+                            ? 'All stops completed'
+                            : 'Heading to stop ${completed + 1}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -108,11 +108,8 @@ class DriverStopsPage extends StatelessWidget {
             itemCount: driver.halts.length,
             itemBuilder: (context, index) {
               final halt = driver.halts[index];
-              final done = driver.completedHalts.contains(halt.id);
-              final nextHalt = driver.halts
-                  .where((h) => !driver.completedHalts.contains(h.id))
-                  .firstOrNull;
-              final isNext = !done && halt.id == nextHalt?.id;
+              final done = index <= maxCompletedIndex;
+              final isNext = index == maxCompletedIndex + 1;
 
               return HaltTile(
                 halt: halt,

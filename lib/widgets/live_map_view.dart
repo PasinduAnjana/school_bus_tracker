@@ -144,9 +144,11 @@ class _LiveMapViewState extends State<LiveMapView> {
       }
     }
     if (selected != null) {
-      final uncompletedHalts = monitor.halts
-          .where((h) => !monitor.completedHaltIds.contains(h.id))
-          .toList();
+      final maxCompletedIndex = monitor.halts
+          .lastIndexWhere((h) => monitor.completedHaltIds.contains(h.id));
+      final uncompletedHalts = maxCompletedIndex + 1 < monitor.halts.length
+          ? monitor.halts.sublist(maxCompletedIndex + 1)
+          : <Halt>[];
       nextHalt = uncompletedHalts.firstOrNull;
       _checkAndFetchRoute(selected.latitude, selected.longitude, uncompletedHalts);
     } else {
@@ -358,23 +360,27 @@ class _LiveMapViewState extends State<LiveMapView> {
                           if (widget.isParentMode) ...[
                             if (selected != null)
                               _TripHeaderCard(trip: selected, monitor: monitor),
-                            ...monitor.halts.map(
-                              (halt) => HaltTile(
+                            ...monitor.halts.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final halt = entry.value;
+                              final maxCompletedIndex = monitor.halts.lastIndexWhere(
+                                  (h) => monitor.completedHaltIds.contains(h.id));
+                              final done = index <= maxCompletedIndex;
+                              final isNext = index == maxCompletedIndex + 1;
+                              
+                              return HaltTile(
                                 halt: halt,
-                                isDone: monitor.completedHaltIds.contains(
-                                  halt.id,
-                                ),
-                                isNext: halt.id == nextHalt?.id,
-                                onTap:
-                                    halt.latitude != null &&
-                                        halt.longitude != null
+                                isDone: done,
+                                isNext: isNext,
+                                isTripActive: true,
+                                onTap: halt.latitude != null && halt.longitude != null
                                     ? () => _mapController.move(
                                         LatLng(halt.latitude!, halt.longitude!),
                                         16,
                                       )
                                     : null,
-                              ),
-                            ),
+                              );
+                            }),
                           ] else ...[
                             ...trips.map((t) {
                               final isSelected =
