@@ -61,12 +61,10 @@ class DriverProvider extends ChangeNotifier {
   void _startLocationStream() {
     if (_locationStream != null) return;
     _locationStream = LocationService.onLocationChanged().listen((loc) {
-      if (loc.latitude != null && loc.longitude != null) {
-        _currentLat = loc.latitude;
-        _currentLng = loc.longitude;
-        _checkHaltProximity();
-        notifyListeners();
-      }
+      _currentLat = loc.latitude;
+      _currentLng = loc.longitude;
+      _checkHaltProximity();
+      notifyListeners();
     });
   }
 
@@ -197,6 +195,7 @@ class DriverProvider extends ChangeNotifier {
       _tripActive = true;
       notifyListeners();
       _startLocationStream();
+      await _checkHaltProximity();
       _startPinging(driverId);
 
       unawaited(_startBackgroundService(driverId));
@@ -237,16 +236,6 @@ class DriverProvider extends ChangeNotifier {
     });
   }
 
-  void _sendNotificationUpdate() {
-    final routeName = selectedRouteName ?? 'Unknown';
-    final haltsCompleted = _halts.isNotEmpty
-        ? '${_completedHalts.length}/${_halts.length} halts'
-        : null;
-    FlutterBackgroundService().invoke('updateNotification', {
-      'title': 'Trip: $routeName',
-      'content': haltsCompleted ?? 'Tracking active',
-    });
-  }
 
   Future<void> stopTrip() async {
     _tripActive = false;
@@ -323,8 +312,30 @@ class DriverProvider extends ChangeNotifier {
       debugPrint('pingLocation error: $e');
     }
 
+    await _syncCompletedHalts();
     await _checkHaltProximity();
-    _sendNotificationUpdate();
+  }
+
+  Future<void> _syncCompletedHalts() async {
+    if (_liveLocationId == null) return;
+    try {
+      final tripData = await SupabaseService.client
+          .from('trip_halts')
+          .select('halt_id')
+          .eq('live_location_id', _liveLocationId!);
+      
+      bool changed = false;
+      for (final row in tripData as List) {
+        final haltId = row['halt_id'] as String;
+        if (!_completedHalts.contains(haltId)) {
+          _completedHalts.add(haltId);
+          changed = true;
+        }
+      }
+      if (changed) notifyListeners();
+    } catch (e) {
+      debugPrint('sync halts error: $e');
+    }
   }
 
   Future<void> _checkHaltProximity() async {

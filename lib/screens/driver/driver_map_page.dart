@@ -94,9 +94,11 @@ class _DriverMapPageState extends State<DriverMapPage> {
       });
     }
 
-    final uncompletedHalts = driver.halts
-        .where((h) => !driver.completedHalts.contains(h.id))
-        .toList();
+    final maxCompletedIndex = driver.halts
+        .lastIndexWhere((h) => driver.completedHalts.contains(h.id));
+    final uncompletedHalts = maxCompletedIndex + 1 < driver.halts.length
+        ? driver.halts.sublist(maxCompletedIndex + 1)
+        : <Halt>[];
     final nextHalt = uncompletedHalts.firstOrNull;
 
     if (driver.currentLat != null && driver.currentLng != null) {
@@ -176,77 +178,80 @@ class _DriverMapPageState extends State<DriverMapPage> {
                       height: 80,
                       child: const _PingRipple(),
                     ),
-                  for (final halt in driver.halts)
-                    if (halt.latitude != null && halt.longitude != null)
-                      if (driver.completedHalts.contains(halt.id))
-                        Marker(
-                          point: LatLng(halt.latitude!, halt.longitude!),
-                          width: 24,
-                          height: 24,
-                          child: Center(
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.tertiary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  width: 2,
-                                ),
+                  ...driver.halts.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final halt = entry.value;
+                    if (halt.latitude == null || halt.longitude == null) return null;
+                    
+                    final isCompleted = index <= maxCompletedIndex;
+                    
+                    if (isCompleted) {
+                      return Marker(
+                        point: LatLng(halt.latitude!, halt.longitude!),
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.tertiary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.surface,
+                                width: 2,
                               ),
                             ),
                           ),
-                        )
-                      else if (halt.id == nextHalt?.id)
-                        Marker(
-                          point: LatLng(halt.latitude!, halt.longitude!),
-                          width: 40,
-                          height: 40,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              const Positioned(
-                                left: -20,
-                                top: -20,
-                                child: SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: _NextHaltGlow(),
-                                ),
+                        ),
+                      );
+                    } else if (halt.id == nextHalt?.id) {
+                      return Marker(
+                        point: LatLng(halt.latitude!, halt.longitude!),
+                        width: 40,
+                        height: 40,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Positioned(
+                              left: -20,
+                              top: -20,
+                              child: SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: _NextHaltGlow(),
                               ),
-                              Center(
-                                child: Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.surface,
-                                      width: 3,
-                                    ),
+                            ),
+                            Center(
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    width: 3,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        )
-                      else
-                        Marker(
-                          point: LatLng(halt.latitude!, halt.longitude!),
-                          width: 28,
-                          height: 36,
-                          child: Icon(
-                            Icons.location_on,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 28,
-                          ),
+                            ),
+                          ],
                         ),
+                      );
+                    } else {
+                      return Marker(
+                        point: LatLng(halt.latitude!, halt.longitude!),
+                        width: 28,
+                        height: 36,
+                        child: Icon(
+                          Icons.location_on,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 28,
+                        ),
+                      );
+                    }
+                  }).whereType<Marker>(),
                 ],
               ),
           ],

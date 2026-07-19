@@ -7,10 +7,10 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
-  static const _tripStatusChannelId = 'trip_status';
+  static const _tripStatusChannelId = 'trip_status_high';
   static const _tripStatusChannelName = 'Trip Status';
   static const _tripStatusNotificationId = 1;
-  static const foregroundChannelId = 'bus_tracker_foreground';
+  static const foregroundChannelId = 'bus_tracker_foreground_high';
   static const _foregroundChannelName = 'Foreground Service';
 
   static Future<void> init() async {
@@ -36,7 +36,7 @@ class NotificationService {
             _tripStatusChannelId,
             _tripStatusChannelName,
             description: 'Shows the current trip route and status',
-            importance: Importance.low,
+            importance: Importance.high,
           ),
         );
         await android.createNotificationChannel(
@@ -44,7 +44,7 @@ class NotificationService {
             foregroundChannelId,
             _foregroundChannelName,
             description: 'Required for foreground service to keep trip alive',
-            importance: Importance.low,
+            importance: Importance.high,
           ),
         );
       }

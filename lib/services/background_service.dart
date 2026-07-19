@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
@@ -35,7 +37,7 @@ void backgroundServiceEntrypoint() {
       initialNotificationContent: 'Trip tracking active',
       foregroundServiceNotificationId: _serviceNotificationId,
       foregroundServiceTypes: [AndroidForegroundType.location],
-      notificationChannelId: 'bus_tracker_foreground',
+      notificationChannelId: 'bus_tracker_foreground_high',
     ),
     iosConfiguration: IosConfiguration(
       autoStart: false,
@@ -70,7 +72,6 @@ void _onStart(ServiceInstance service) async {
     final jwtToken = event['jwtToken'] as String?;
     final liveLocationId = event['liveLocationId'] as String?;
     final routeName = event['routeName'] as String? ?? 'Unknown';
-    final haltsText = event['haltsText'] as String?;
     
     final halts = event['halts'] as List<dynamic>? ?? [];
     final completedHalts = Set<String>.from(event['completedHalts'] as List<dynamic>? ?? []);
@@ -83,9 +84,36 @@ void _onStart(ServiceInstance service) async {
     }
 
     if (service is AndroidServiceInstance) {
-      service.setForegroundNotificationInfo(
-        title: 'Trip: $routeName',
-        content: haltsText ?? 'Tracking active',
+      String nextHaltName = 'Destination';
+      for (final h in halts) {
+        if (!completedHalts.contains(h['id'])) {
+          nextHaltName = h['name'] as String? ?? 'Destination';
+          break;
+        }
+      }
+
+      final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      await flutterLocalNotificationsPlugin.show(
+        id: _serviceNotificationId,
+        title: 'Trip Active: $routeName',
+        body: 'Next: $nextHaltName',
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'bus_tracker_foreground_high',
+            'Foreground Service',
+            ongoing: true,
+            showProgress: true,
+            maxProgress: halts.length,
+            progress: completedHalts.length,
+            color: const Color(0xFFFFD700), // App primary gold
+            styleInformation: BigTextStyleInformation(
+              '<b>Next:</b> $nextHaltName<br><b>Completed:</b> ${completedHalts.length} of ${halts.length} stops',
+              htmlFormatBigText: true,
+              contentTitle: '<b>Trip Active:</b> $routeName',
+              htmlFormatContentTitle: true,
+            ),
+          ),
+        ),
       );
     }
 
@@ -124,9 +152,36 @@ void _onStart(ServiceInstance service) async {
           } catch (_) {}
 
           if (service is AndroidServiceInstance) {
-            service.setForegroundNotificationInfo(
-              title: 'Trip: $routeName',
-              content: '${completedHalts.length}/${halts.length} halts',
+            String nextHaltName = 'Destination';
+            for (final h in halts) {
+              if (!completedHalts.contains(h['id'])) {
+                nextHaltName = h['name'] as String? ?? 'Destination';
+                break;
+              }
+            }
+
+            final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+            await flutterLocalNotificationsPlugin.show(
+              id: _serviceNotificationId,
+              title: 'Trip Active: $routeName',
+              body: 'Next: $nextHaltName',
+              notificationDetails: NotificationDetails(
+                android: AndroidNotificationDetails(
+                  'bus_tracker_foreground_high',
+                  'Foreground Service',
+                  ongoing: true,
+                  showProgress: true,
+                  maxProgress: halts.length,
+                  progress: completedHalts.length,
+                  color: const Color(0xFFFFD700), // App primary gold
+                  styleInformation: BigTextStyleInformation(
+                    '<b>Next:</b> $nextHaltName<br><b>Completed:</b> ${completedHalts.length} of ${halts.length} stops',
+                    htmlFormatBigText: true,
+                    contentTitle: '<b>Trip Active:</b> $routeName',
+                    htmlFormatContentTitle: true,
+                  ),
+                ),
+              ),
             );
           }
         }
