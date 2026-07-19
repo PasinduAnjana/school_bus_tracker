@@ -54,6 +54,12 @@ class DriverProvider extends ChangeNotifier {
       await LocationService.requestEnable();
     }
     _gpsReady = true;
+    _startLocationStream();
+    notifyListeners();
+  }
+
+  void _startLocationStream() {
+    if (_locationStream != null) return;
     _locationStream = LocationService.onLocationChanged().listen((loc) {
       if (loc.latitude != null && loc.longitude != null) {
         _currentLat = loc.latitude;
@@ -62,7 +68,6 @@ class DriverProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
-    notifyListeners();
   }
 
   Future<void> loadRoutes(String driverId) async {
@@ -123,6 +128,7 @@ class DriverProvider extends ChangeNotifier {
 
       await _loadHalts(_selectedRouteId!);
       notifyListeners();
+      _startLocationStream();
       _startPinging(driverId);
       unawaited(_startBackgroundService(driverId));
     } catch (e) {
@@ -190,6 +196,7 @@ class DriverProvider extends ChangeNotifier {
 
       _tripActive = true;
       notifyListeners();
+      _startLocationStream();
       _startPinging(driverId);
 
       unawaited(_startBackgroundService(driverId));
