@@ -3,14 +3,21 @@ enum UserRole { admin, driver, parent }
 class AppUser {
   final String id;
   final String phoneNumber;
+  final String? name;
   final UserRole role;
 
-  AppUser({required this.id, required this.phoneNumber, required this.role});
+  AppUser({
+    required this.id,
+    required this.phoneNumber,
+    this.name,
+    required this.role,
+  });
 
   factory AppUser.fromMap(Map<String, dynamic> map) {
     return AppUser(
       id: map['id'] as String,
       phoneNumber: map['phone_number'] as String,
+      name: map['name'] as String?,
       role: _parseRole(map['role'] as String),
     );
   }

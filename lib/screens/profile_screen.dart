@@ -31,15 +31,26 @@ class ProfileScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 44,
                       backgroundColor: AppColors.primaryContainer,
-                      child: Icon(
-                        Icons.person_rounded,
-                        size: 44,
-                        color: AppColors.onSurface.withValues(alpha: 0.5),
-                      ),
+                      child: (user?.name != null && user!.name!.isNotEmpty)
+                          ? Text(
+                              user.name![0].toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                            )
+                          : Icon(
+                              Icons.person_rounded,
+                              size: 44,
+                              color: AppColors.onSurface.withValues(alpha: 0.5),
+                            ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      user?.phoneNumber ?? '',
+                      (user?.name != null && user!.name!.isNotEmpty)
+                          ? user.name!
+                          : (user?.phoneNumber ?? ''),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),

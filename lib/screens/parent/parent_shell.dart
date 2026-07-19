@@ -71,7 +71,16 @@ class _ParentShellState extends State<ParentShell> {
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
-        title: Text(['Home', 'Live Map', 'Stops'][_selectedIndex]),
+        title: Builder(
+          builder: (ctx) {
+            final authUser = ctx.watch<AuthProvider>().currentUser;
+            final name = authUser?.name;
+            final homeTitle = (name != null && name.isNotEmpty) 
+                ? 'Hello, $name' 
+                : 'Home';
+            return Text([homeTitle, 'Live Map', 'Stops'][_selectedIndex]);
+          }
+        ),
         actions: [
           if (routeAssignments.length > 1)
             Padding(

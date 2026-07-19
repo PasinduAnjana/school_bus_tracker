@@ -7,11 +7,13 @@ class WhitelistedUser {
   final String id;
   final String phoneNumber;
   final String role;
+  final String? name;
 
   WhitelistedUser({
     required this.id,
     required this.phoneNumber,
     required this.role,
+    this.name,
   });
 
   factory WhitelistedUser.fromMap(Map<String, dynamic> map) {
@@ -19,6 +21,7 @@ class WhitelistedUser {
       id: map['id'] as String,
       phoneNumber: map['phone_number'] as String,
       role: map['role'] as String,
+      name: map['name'] as String?,
     );
   }
 }
@@ -135,7 +138,7 @@ class AdminProvider extends ChangeNotifier {
     try {
       final data = await SupabaseService.client
           .from('users_whitelist')
-          .select('id, phone_number, role')
+          .select('id, phone_number, role, name')
           .order('created_at', ascending: false);
       _users = (data as List).map((e) => WhitelistedUser.fromMap(e)).toList();
     } catch (e) {
@@ -145,16 +148,32 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addUser(String phone, String role) async {
+  Future<bool> addUser(String phone, String role, {String? name}) async {
     try {
       await SupabaseService.client.from('users_whitelist').insert({
         'phone_number': formatE164(phone),
         'role': role,
+        if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
       });
       await loadUsers();
       return true;
     } catch (e) {
       debugPrint('addUser error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateUserName(String id, String name) async {
+    try {
+      await SupabaseService.client
+          .from('users_whitelist')
+          .update({'name': name.trim()})
+          .eq('id', id);
+      await loadUsers();
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating user name: $e');
       return false;
     }
   }
@@ -217,6 +236,7 @@ class AdminProvider extends ChangeNotifier {
         await SupabaseService.client.from('users_whitelist').insert({
           'phone_number': normalizedPhone,
           'role': 'Parent',
+          'name': name,
         });
         await loadUsers();
         parent = findUserByPhone(parentPhone);
@@ -267,17 +287,19 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('routes')
           .select(
-            'id, name, driver_id, driver:users_whitelist!driver_id(phone_number)',
+            'id, name, driver_id, driver:users_whitelist!driver_id(phone_number, name)',
           )
           .order('name');
       _routes = (data as List).map((e) {
         final map = e as Map<String, dynamic>;
         final driver = map['driver'] as Map<String, dynamic>?;
+        final driverName = driver?['name'] as String?;
+        final driverPhone = driver?['phone_number'] as String?;
         return RouteWithDriver(
           id: map['id'] as String,
           name: map['name'] as String,
           driverId: map['driver_id'] as String?,
-          driverPhone: driver?['phone_number'] as String?,
+          driverPhone: driverName != null ? '$driverName ($driverPhone)' : driverPhone,
         );
       }).toList();
     } catch (e) {

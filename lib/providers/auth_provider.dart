@@ -39,7 +39,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final result = await SupabaseService.client
           .from('users_whitelist')
-          .select('id, phone_number, role')
+          .select('id, phone_number, role, name')
           .eq('phone_number', phone)
           .single();
       _currentUser = AppUser.fromMap(result);

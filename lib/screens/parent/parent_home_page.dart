@@ -347,7 +347,7 @@ class _BusStatusCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Driver: ${t.driverPhone}',
+                          'Driver: ${t.driverName != null && t.driverName!.isNotEmpty ? '${t.driverName} (${t.driverPhone})' : t.driverPhone}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),

@@ -22,23 +22,37 @@ class _DriversTabState extends State<DriversTab> {
 
   Future<void> _showAddDriverDialog() async {
     final phoneCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Add Driver'),
-        content: TextField(
-          controller: phoneCtrl,
-          autofocus: true,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneCtrl,
+              autofocus: true,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Driver phone number',
+                hintText: '077 123 4567',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Driver name',
+                hintText: 'Nimal Perera',
+              ),
+            ),
           ],
-          decoration: const InputDecoration(
-            labelText: 'Driver phone number',
-            hintText: '077 123 4567',
-          ),
         ),
         actions: [
           TextButton(
@@ -55,16 +69,59 @@ class _DriversTabState extends State<DriversTab> {
 
     if (ok != true) {
       phoneCtrl.dispose();
+      nameCtrl.dispose();
       return;
     }
 
     final phone = phoneCtrl.text.trim();
+    final name = nameCtrl.text.trim();
     phoneCtrl.dispose();
+    nameCtrl.dispose();
 
     if (phone.isEmpty) return;
 
     if (!mounted) return;
-    await context.read<AdminProvider>().addUser(phone, 'Driver');
+    await context.read<AdminProvider>().addUser(phone, 'Driver', name: name);
+  }
+
+  Future<void> _showEditDriverDialog(WhitelistedUser d) async {
+    final nameCtrl = TextEditingController(text: d.name ?? '');
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Driver'),
+        content: TextField(
+          controller: nameCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Driver name',
+            hintText: 'Nimal Perera',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) {
+      nameCtrl.dispose();
+      return;
+    }
+
+    final name = nameCtrl.text.trim();
+    nameCtrl.dispose();
+
+    if (!mounted) return;
+    await context.read<AdminProvider>().updateUserName(d.id, name);
   }
 
   @override
@@ -131,40 +188,54 @@ class _DriversTabState extends State<DriversTab> {
                               ),
                             ),
                             title: Text(
-                              d.phoneNumber,
+                              d.name != null && d.name!.isNotEmpty
+                                  ? d.name!
+                                  : d.phoneNumber,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.delete_outline,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              onPressed: () async {
-                                final ok = await showDialog<bool>(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('Delete driver'),
-                                    content: Text('Delete ${d.phoneNumber}?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, true),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
+                            subtitle: d.name != null && d.name!.isNotEmpty
+                                ? Text(d.phoneNumber)
+                                : null,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () => _showEditDriverDialog(d),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: Theme.of(context).colorScheme.error,
                                   ),
-                                );
-                                if (ok == true) {
-                                  admin.deleteUser(d.id);
-                                }
-                              },
+                                  onPressed: () async {
+                                    final ok = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text('Delete driver'),
+                                        content: Text('Delete ${d.phoneNumber}?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, true),
+                                            child: const Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (ok == true) {
+                                      admin.deleteUser(d.id);
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );

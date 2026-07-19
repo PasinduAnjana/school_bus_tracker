@@ -49,7 +49,16 @@ class _DriverShellState extends State<DriverShell> {
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
-        title: Text(['Driver Dashboard', 'Live Map', 'Stops'][_selectedIndex]),
+        title: Builder(
+          builder: (ctx) {
+            final authUser = ctx.watch<AuthProvider>().currentUser;
+            final name = authUser?.name;
+            final homeTitle = (name != null && name.isNotEmpty) 
+                ? 'Hello, $name' 
+                : 'Driver Dashboard';
+            return Text([homeTitle, 'Live Map', 'Stops'][_selectedIndex]);
+          }
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
