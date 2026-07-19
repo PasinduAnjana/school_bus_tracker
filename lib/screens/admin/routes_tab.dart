@@ -147,7 +147,9 @@ class _RoutesTabState extends State<RoutesTab> {
                       ),
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 100),
+                      padding: EdgeInsets.only(
+                        bottom: 100 + MediaQuery.of(context).padding.bottom,
+                      ),
                       itemCount: admin.routes.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
@@ -235,7 +237,9 @@ class _RoutesTabState extends State<RoutesTab> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
         child: FloatingActionButton.extended(
           heroTag: 'routes_fab',
           onPressed: _showCreateRouteDialog,

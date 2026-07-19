@@ -255,7 +255,9 @@ class _UsersTabState extends State<UsersTab> {
                       ),
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 100),
+                      padding: EdgeInsets.only(
+                        bottom: 100 + MediaQuery.of(context).padding.bottom,
+                      ),
                       itemCount: admin.students.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
@@ -345,7 +347,9 @@ class _UsersTabState extends State<UsersTab> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
         child: FloatingActionButton.extended(
           heroTag: 'users_fab',
           onPressed: _showAddStudentDialog,
