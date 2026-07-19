@@ -50,12 +50,10 @@ class _RoutesTabState extends State<RoutesTab> {
     );
 
     if (ok != true) {
-      nameCtrl.dispose();
       return;
     }
 
     final name = nameCtrl.text.trim();
-    nameCtrl.dispose();
 
     if (name.isEmpty) return;
 
@@ -91,12 +89,10 @@ class _RoutesTabState extends State<RoutesTab> {
     );
 
     if (ok != true) {
-      nameCtrl.dispose();
       return;
     }
 
     final name = nameCtrl.text.trim();
-    nameCtrl.dispose();
 
     if (name.isEmpty) return;
 

@@ -137,25 +137,17 @@ class _UsersTabState extends State<UsersTab> {
     );
 
     if (ok != true) {
-      nameCtrl.dispose();
-      phoneCtrl.dispose();
-      parentNameCtrl.dispose();
       return;
     }
 
     final name = nameCtrl.text.trim();
     final phone = phoneCtrl.text.trim();
 
-    nameCtrl.dispose();
-    phoneCtrl.dispose();
-
     if (name.isEmpty || phone.isEmpty) {
-      parentNameCtrl.dispose();
       return;
     }
 
     final parentName = showParentName ? parentNameCtrl.text.trim() : null;
-    parentNameCtrl.dispose();
 
     if (!mounted) return;
     await context.read<AdminProvider>().addStudentWithParent(

@@ -68,15 +68,11 @@ class _DriversTabState extends State<DriversTab> {
     );
 
     if (ok != true) {
-      phoneCtrl.dispose();
-      nameCtrl.dispose();
       return;
     }
 
     final phone = phoneCtrl.text.trim();
     final name = nameCtrl.text.trim();
-    phoneCtrl.dispose();
-    nameCtrl.dispose();
 
     if (phone.isEmpty) return;
 
@@ -113,12 +109,12 @@ class _DriversTabState extends State<DriversTab> {
     );
 
     if (ok != true) {
-      nameCtrl.dispose();
       return;
     }
 
     final name = nameCtrl.text.trim();
-    nameCtrl.dispose();
+
+    if (name.isEmpty) return;
 
     if (!mounted) return;
     await context.read<AdminProvider>().updateUserName(d.id, name);
