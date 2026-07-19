@@ -39,4 +39,16 @@ class Halt {
       stopOrder: map['stop_order'] as int? ?? 0,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'route_id': routeId,
+      'name': name,
+      'arrival_time': arrivalTime,
+      'latitude': latitude,
+      'longitude': longitude,
+      'stop_order': stopOrder,
+    };
+  }
 }

@@ -222,6 +222,9 @@ class DriverProvider extends ChangeNotifier {
         ? '${_completedHalts.length}/${_halts.length} halts'
         : null;
 
+    final haltsList = _halts.map((h) => h.toMap()).toList();
+    final completedList = _completedHalts.toList();
+
     service.invoke('startTrip', {
       'supabaseUrl': SupabaseConfig.supabaseUrl,
       'anonKey': SupabaseConfig.anonKey,
@@ -229,6 +232,8 @@ class DriverProvider extends ChangeNotifier {
       'liveLocationId': _liveLocationId,
       'routeName': routeName,
       'haltsText': haltsText,
+      'halts': haltsList,
+      'completedHalts': completedList,
     });
   }
 
