@@ -158,7 +158,9 @@ class _UsersTabState extends State<UsersTab> {
     );
   }
 
-  Future<void> _showChangeBusDialog(StudentWithParent s) async {
+  Future<void> _showEditStudentDialog(StudentWithParent s) async {
+    final nameCtrl = TextEditingController(text: s.name);
+    final parentNameCtrl = TextEditingController(text: s.parentName ?? '');
     String? selectedRouteId = s.routeId;
 
     final ok = await showDialog<bool>(
@@ -168,17 +170,39 @@ class _UsersTabState extends State<UsersTab> {
           builder: (ctx, setDialogState) {
             final admin = context.read<AdminProvider>();
             return AlertDialog(
-              title: const Text('Change Bus'),
-              content: DropdownButtonFormField<String>(
-                initialValue: selectedRouteId,
-                decoration: const InputDecoration(labelText: 'Select bus'),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text('None')),
-                  ...admin.routes.map(
-                    (r) => DropdownMenuItem(value: r.id, child: Text(r.name)),
+              title: const Text('Edit Student'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameCtrl,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Student name',
+                    ),
+                  ),
+                  if (s.parentId != null) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: parentNameCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Parent name',
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedRouteId,
+                    decoration: const InputDecoration(labelText: 'Select bus'),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('None')),
+                      ...admin.routes.map(
+                        (r) => DropdownMenuItem(value: r.id, child: Text(r.name)),
+                      ),
+                    ],
+                    onChanged: (v) => setDialogState(() => selectedRouteId = v),
                   ),
                 ],
-                onChanged: (v) => setDialogState(() => selectedRouteId = v),
               ),
               actions: [
                 TextButton(
@@ -197,11 +221,24 @@ class _UsersTabState extends State<UsersTab> {
     );
 
     if (ok != true) return;
+
+    final newName = nameCtrl.text.trim();
+    final newParentName = parentNameCtrl.text.trim();
+
+    if (newName.isEmpty) return;
+
     if (!mounted) return;
-    await context.read<AdminProvider>().updateStudentRoute(
-      s.id,
-      selectedRouteId,
-    );
+
+    final admin = context.read<AdminProvider>();
+    await admin.updateStudentName(s.id, newName);
+    
+    if (s.routeId != selectedRouteId) {
+      await admin.updateStudentRoute(s.id, selectedRouteId);
+    }
+
+    if (s.parentId != null && newParentName.isNotEmpty) {
+      await admin.updateUserName(s.parentId!, newParentName);
+    }
   }
 
   @override
@@ -281,7 +318,9 @@ class _UsersTabState extends State<UsersTab> {
                             subtitle: Text(
                               s.routeName != null
                                   ? 'Bus: ${s.routeName}'
-                                  : (s.parentPhone ?? 'No parent'),
+                                  : (s.parentName != null
+                                      ? '${s.parentName} (${s.parentPhone})'
+                                      : (s.parentPhone ?? 'No parent')),
                               style: TextStyle(
                                 color: Theme.of(
                                   context,
@@ -292,11 +331,9 @@ class _UsersTabState extends State<UsersTab> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(
-                                    Icons.directions_bus_outlined,
-                                  ),
-                                  tooltip: 'Change bus',
-                                  onPressed: () => _showChangeBusDialog(s),
+                                  icon: const Icon(Icons.edit_outlined),
+                                  tooltip: 'Edit details',
+                                  onPressed: () => _showEditStudentDialog(s),
                                 ),
                                 IconButton(
                                   icon: Icon(

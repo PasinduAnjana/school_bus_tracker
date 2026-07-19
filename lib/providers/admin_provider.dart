@@ -31,6 +31,7 @@ class StudentWithParent {
   final String name;
   final String? parentId;
   final String? parentPhone;
+  final String? parentName;
   final String? routeId;
   final String? routeName;
 
@@ -39,17 +40,20 @@ class StudentWithParent {
     required this.name,
     this.parentId,
     this.parentPhone,
+    this.parentName,
     this.routeId,
     this.routeName,
   });
 
   factory StudentWithParent.fromMap(Map<String, dynamic> map) {
     final route = map['route'] as Map<String, dynamic>?;
+    final parent = map['parent'] as Map<String, dynamic>?;
     return StudentWithParent(
       id: map['id'] as String,
       name: map['name'] as String,
       parentId: map['parent_id'] as String?,
-      parentPhone: map['parent_phone'] as String?,
+      parentPhone: parent?['phone_number'] as String?,
+      parentName: parent?['name'] as String?,
       routeId: map['route_id'] as String?,
       routeName: route?['name'] as String?,
     );
@@ -199,7 +203,7 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('students')
           .select(
-            'id, name, parent_id, route_id, parent:users_whitelist!parent_id(phone_number), route:routes!route_id(name)',
+            'id, name, parent_id, route_id, parent:users_whitelist!parent_id(phone_number, name), route:routes!route_id(name)',
           )
           .order('name');
       _students = (data as List)
@@ -276,6 +280,20 @@ class AdminProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('updateStudentRoute error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateStudentName(String id, String name) async {
+    try {
+      await SupabaseService.client
+          .from('students')
+          .update({'name': name.trim()})
+          .eq('id', id);
+      await loadStudents();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating student name: $e');
       return false;
     }
   }
