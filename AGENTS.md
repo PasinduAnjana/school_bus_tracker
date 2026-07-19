@@ -60,8 +60,8 @@ RLS: SELECT = `auth.role() = 'authenticated'` on all tables. Admin write ops gat
 - **Auth** — Supabase Auth phone OTP (`signInWithOtp` / `verifyOTP`). Session auto-managed. RLS uses `auth.role() = 'authenticated'` (user has real JWT after verification).
 - **Phone format** — Supabase Auth strips `+` prefix. `formatE164()` in `lib/utils/phone_utils.dart` normalises Sri Lankan numbers to `+94`. Used before every whitelist lookup.
 - **users_whitelist has no `name` column** — only `phone_number` + `role`. Names exist on `students` and `routes` tables only. Do not query `users_whitelist.name`.
-- **Background service** — `flutter_background_service` v5.1.0. Isolate runs `Completer<void>().future` loop, pings GPS + Supabase REST (raw HTTP PATCH) every 20s. Android foreground service with `location` type. No `DartPluginRegistrant` needed — auto-registers.
-- **Notifications** — `flutter_local_notifications` v22. Android channels: `trip_status`, `bus_tracker_foreground`.
+- **Background service** — `flutter_background_service` v5.1.0. Isolate runs `Completer<void>().future` loop, streams GPS instantly (`getPositionStream`) to detect halt proximity (`<= 100m`) and POSTs to `trip_halts` immediately. Also pings `live_locations` every 20s.
+- **Notifications** — `flutter_local_notifications` v22. Android channels: `trip_status` (Importance.default), `bus_tracker_foreground_high` (Importance.high). Uses `BigTextStyleInformation` and `progress` bars for rich live tracking UI without Heads-Up interruptions.
 - **Dev bypass** — Phone `0770000000`, code `4592` (documented in `setup.sh` for testing without SMS).
 - **seed.sql** — sample INSERTs **commented out** by default. Uncomment before `supabase db reset`.
 - **Test** — 1 file (`test/widget_test.dart`), basic smoke test. **Assertions are stale** (checks for "LOGIN" and a subtitle that don't match the current login screen). No integration test infra.
@@ -79,8 +79,8 @@ RLS: SELECT = `auth.role() = 'authenticated'` on all tables. Admin write ops gat
 |---|---|
 | `AuthProvider` | Supabase session restore → `signInWithOtp` / `verifyOTP` → fetch user from `users_whitelist` |
 | `AdminProvider` | CRUD for students, routes, halts, payments, whitelist users. `togglePayment()` does optimistic UI update with rollback. |
-| `DriverProvider` | GPS ping loop (20s), start/stop trip, background service orchestration, halt check-in via `trip_halts` |
-| `MonitorProvider` | Load active trips (with joins to routes + whitelist), Realtime subscription, halt completion tracking |
+| `DriverProvider` | GPS stream + ping loop (20s), start/stop trip, background service orchestration. Syncs `_completedHalts` with Supabase every 20s (`_syncCompletedHalts()`) to avoid desync with background isolate. |
+| `MonitorProvider` | Load active trips (with joins to routes + whitelist), Realtime subscription, halt completion tracking. UI maps use `maxCompletedIndex` to skip missed halts instead of breaking paths. |
 
 ## Migrating to a new Supabase project
 
