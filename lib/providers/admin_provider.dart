@@ -334,6 +334,20 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateRouteName(String id, String name) async {
+    try {
+      await SupabaseService.client
+          .from('routes')
+          .update({'name': name.trim()})
+          .eq('id', id);
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating route name: $e');
+      return false;
+    }
+  }
+
   Future<bool> deleteRoute(String id) async {
     try {
       await SupabaseService.client.from('routes').delete().eq('id', id);

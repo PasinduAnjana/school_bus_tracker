@@ -63,6 +63,47 @@ class _RoutesTabState extends State<RoutesTab> {
     await context.read<AdminProvider>().createRoute(name);
   }
 
+  Future<void> _showEditRouteDialog(RouteWithDriver r) async {
+    final nameCtrl = TextEditingController(text: r.name);
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Route Name'),
+        content: TextField(
+          controller: nameCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Route name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) {
+      nameCtrl.dispose();
+      return;
+    }
+
+    final name = nameCtrl.text.trim();
+    nameCtrl.dispose();
+
+    if (name.isEmpty) return;
+
+    if (!mounted) return;
+    await context.read<AdminProvider>().updateRouteName(r.id, name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final admin = context.watch<AdminProvider>();
@@ -136,6 +177,10 @@ class _RoutesTabState extends State<RoutesTab> {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () => _showEditRouteDialog(r),
+                                ),
                                 IconButton(
                                   icon: Icon(
                                     Icons.delete_outline,
