@@ -9,6 +9,7 @@ class ActiveTrip {
   final String locationId;
   final String routeId;
   final String routeName;
+  final String? encodedPath;
   final String driverId;
   final String driverPhone;
   final String? driverName;
@@ -20,6 +21,7 @@ class ActiveTrip {
     required this.locationId,
     required this.routeId,
     required this.routeName,
+    this.encodedPath,
     required this.driverId,
     required this.driverPhone,
     this.driverName,
@@ -37,6 +39,7 @@ class ActiveTrip {
       locationId: map['id'] as String,
       routeId: map['route_id'] as String,
       routeName: route?['name'] as String? ?? 'Unknown',
+      encodedPath: route?['encoded_path'] as String?,
       driverId: map['driver_id'] as String,
       driverPhone: driver?['phone_number'] as String? ?? 'Unknown',
       driverName: driver?['name'] as String?,
@@ -84,7 +87,7 @@ class MonitorProvider extends ChangeNotifier {
           .from('live_locations')
           .select(
             'id, route_id, driver_id, latitude, longitude, recorded_at, '
-            'route:routes(name), driver:users_whitelist(phone_number, name)',
+            'route:routes(name, encoded_path), driver:users_whitelist(phone_number, name)',
           )
           .eq('trip_active', true);
       if (routeId != null) {

@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../models/halt.dart';
 import '../providers/monitor_provider.dart';
 import '../services/route_service.dart';
+import '../utils/polyline_utils.dart';
 import 'frosted_card.dart';
 import 'map_pin.dart';
 import 'halt_tile.dart';
@@ -31,7 +32,7 @@ class _LiveMapViewState extends State<LiveMapView> {
   List<LatLng> _nextHaltPath = [];
   List<LatLng> _remainingPath = [];
 
-  void _checkAndFetchRoute(double tripLat, double tripLng, List<Halt> nextHalts) async {
+  void _checkAndFetchRoute(ActiveTrip trip, List<Halt> nextHalts) async {
     if (nextHalts.isEmpty) {
       if (_nextHaltPath.isNotEmpty && mounted) {
         setState(() {
@@ -42,6 +43,8 @@ class _LiveMapViewState extends State<LiveMapView> {
       return;
     }
 
+    final tripLat = trip.latitude;
+    final tripLng = trip.longitude;
     final tLoc = '${tripLat.toStringAsFixed(3)},${tripLng.toStringAsFixed(3)}';
     final hLoc = nextHalts.map((h) => '${h.latitude},${h.longitude}').join('|');
 
@@ -59,7 +62,20 @@ class _LiveMapViewState extends State<LiveMapView> {
       final path1 = await RouteService.getRoute([LatLng(tripLat, tripLng), validHalts.first]);
       
       List<LatLng> path2 = [];
-      if (validHalts.length > 1) {
+      if (trip.encodedPath != null && trip.encodedPath!.isNotEmpty) {
+        final decoded = PolylineUtils.decode(trip.encodedPath!);
+        int closestIdx = 0;
+        double minDst = double.infinity;
+        final distance = const Distance();
+        for (int i = 0; i < decoded.length; i++) {
+          final d = distance.as(LengthUnit.Meter, decoded[i], validHalts.first);
+          if (d < minDst) {
+            minDst = d;
+            closestIdx = i;
+          }
+        }
+        path2 = decoded.sublist(closestIdx);
+      } else if (validHalts.length > 1) {
         path2 = await RouteService.getRoute(validHalts);
       }
 
@@ -150,7 +166,7 @@ class _LiveMapViewState extends State<LiveMapView> {
           ? monitor.halts.sublist(maxCompletedIndex + 1)
           : <Halt>[];
       nextHalt = uncompletedHalts.firstOrNull;
-      _checkAndFetchRoute(selected.latitude, selected.longitude, uncompletedHalts);
+      _checkAndFetchRoute(selected, uncompletedHalts);
     } else {
       if (_nextHaltPath.isNotEmpty) {
         _nextHaltPath = [];

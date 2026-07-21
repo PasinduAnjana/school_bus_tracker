@@ -65,12 +65,16 @@ class RouteWithDriver {
   final String name;
   final String? driverId;
   final String? driverPhone;
+  final String? encodedPath;
+  final List<dynamic>? waypoints;
 
   RouteWithDriver({
     required this.id,
     required this.name,
     this.driverId,
     this.driverPhone,
+    this.encodedPath,
+    this.waypoints,
   });
 
   factory RouteWithDriver.fromMap(Map<String, dynamic> map) {
@@ -79,6 +83,8 @@ class RouteWithDriver {
       name: map['name'] as String,
       driverId: map['driver_id'] as String?,
       driverPhone: map['driver_phone'] as String?,
+      encodedPath: map['encoded_path'] as String?,
+      waypoints: map['waypoints'] as List<dynamic>?,
     );
   }
 }
@@ -305,7 +311,7 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('routes')
           .select(
-            'id, name, driver_id, driver:users_whitelist!driver_id(phone_number, name)',
+            'id, name, driver_id, encoded_path, waypoints, driver:users_whitelist!driver_id(phone_number, name)',
           )
           .order('name');
       _routes = (data as List).map((e) {
@@ -318,6 +324,8 @@ class AdminProvider extends ChangeNotifier {
           name: map['name'] as String,
           driverId: map['driver_id'] as String?,
           driverPhone: driverName != null ? '$driverName ($driverPhone)' : driverPhone,
+          encodedPath: map['encoded_path'] as String?,
+          waypoints: map['waypoints'] as List<dynamic>?,
         );
       }).toList();
     } catch (e) {
@@ -373,6 +381,23 @@ class AdminProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('deleteRoute error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateRoutePath(String id, String encodedPath, List<Map<String, dynamic>> waypoints) async {
+    try {
+      await SupabaseService.client
+          .from('routes')
+          .update({
+            'encoded_path': encodedPath,
+            'waypoints': waypoints,
+          })
+          .eq('id', id);
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating route path: $e');
       return false;
     }
   }

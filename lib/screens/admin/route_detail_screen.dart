@@ -7,6 +7,7 @@ import '../../widgets/frosted_card.dart';
 import '../../widgets/squishy_button.dart';
 import '../../widgets/swipe_to_delete_tile.dart';
 import 'map_picker_screen.dart';
+import 'route_path_screen.dart';
 
 class RouteDetailScreen extends StatefulWidget {
   final String routeId;
@@ -276,6 +277,23 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+          SquishyButton(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RoutePathScreen(
+                    routeId: widget.routeId,
+                    routeName: widget.routeName,
+                  ),
+                ),
+              );
+            },
+            label: 'Preview & Edit Path on Map',
+            height: 48,
+            width: double.infinity,
           ),
           const SizedBox(height: 16),
           Text('Halts', style: Theme.of(context).textTheme.titleMedium),
