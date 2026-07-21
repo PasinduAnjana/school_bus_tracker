@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/swipe_to_delete_tile.dart';
 
 class DriversTab extends StatefulWidget {
   const DriversTab({super.key});
@@ -170,70 +171,42 @@ class _DriversTabState extends State<DriversTab> {
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final d = admin.drivers[i];
-                        return FrostedCard(
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 2,
-                            ),
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              child: const Text(
-                                'D',
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                        return SwipeToDeleteTile(
+                          itemKey: d.id,
+                          onConfirmDelete: () async {
+                            return await admin.deleteUser(d.id);
+                          },
+                          child: FrostedCard(
+                            margin: EdgeInsets.zero,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 2,
                               ),
-                            ),
-                            title: Text(
-                              d.name != null && d.name!.isNotEmpty
-                                  ? d.name!
-                                  : d.phoneNumber,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                child: const Text(
+                                  'D',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
                               ),
-                            ),
-                            subtitle: d.name != null && d.name!.isNotEmpty
-                                ? Text(d.phoneNumber)
-                                : null,
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  onPressed: () => _showEditDriverDialog(d),
+                              title: Text(
+                                d.name != null && d.name!.isNotEmpty
+                                    ? d.name!
+                                    : d.phoneNumber,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                  onPressed: () async {
-                                    final ok = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Delete driver'),
-                                        content: Text('Delete ${d.phoneNumber}?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, true),
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (ok == true) {
-                                      admin.deleteUser(d.id);
-                                    }
-                                  },
-                                ),
-                              ],
+                              ),
+                              subtitle: d.name != null && d.name!.isNotEmpty
+                                  ? Text(d.phoneNumber)
+                                  : null,
+                              trailing: IconButton(
+                                icon: const Icon(Icons.edit_outlined),
+                                onPressed: () => _showEditDriverDialog(d),
+                              ),
                             ),
                           ),
                         );

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/swipe_to_delete_tile.dart';
 
 class UsersTab extends StatefulWidget {
   const UsersTab({super.key});
@@ -291,81 +292,53 @@ class _UsersTabState extends State<UsersTab> {
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final s = admin.students[i];
-                        return FrostedCard(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              child: Text(
-                                s.name.isNotEmpty
-                                    ? s.name[0].toUpperCase()
-                                    : '?',
-                                style: TextStyle(
+                        return SwipeToDeleteTile(
+                          itemKey: s.id,
+                          onConfirmDelete: () async {
+                            return await admin.deleteStudent(s.id);
+                          },
+                          child: FrostedCard(
+                            margin: EdgeInsets.zero,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                child: Text(
+                                  s.name.isNotEmpty
+                                      ? s.name[0].toUpperCase()
+                                      : '?',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                s.name,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Text(
+                                s.routeName != null
+                                    ? 'Bus: ${s.routeName}'
+                                    : (s.parentName != null
+                                        ? '${s.parentName} (${s.parentPhone})'
+                                        : (s.parentPhone ?? 'No parent')),
+                                style: TextStyle(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.onPrimaryContainer,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                            ),
-                            title: Text(
-                              s.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                              trailing: IconButton(
+                                icon: const Icon(Icons.edit_outlined),
+                                tooltip: 'Edit details',
+                                onPressed: () => _showEditStudentDialog(s),
                               ),
-                            ),
-                            subtitle: Text(
-                              s.routeName != null
-                                  ? 'Bus: ${s.routeName}'
-                                  : (s.parentName != null
-                                      ? '${s.parentName} (${s.parentPhone})'
-                                      : (s.parentPhone ?? 'No parent')),
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  tooltip: 'Edit details',
-                                  onPressed: () => _showEditStudentDialog(s),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                  onPressed: () async {
-                                    final ok = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Delete student'),
-                                        content: Text('Delete "${s.name}"?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, true),
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (ok == true) {
-                                      admin.deleteStudent(s.id);
-                                    }
-                                  },
-                                ),
-                              ],
                             ),
                           ),
                         );

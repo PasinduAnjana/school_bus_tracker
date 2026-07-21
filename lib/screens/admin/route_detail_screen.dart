@@ -5,6 +5,7 @@ import '../../models/halt.dart';
 import '../../providers/admin_provider.dart';
 import '../../widgets/frosted_card.dart';
 import '../../widgets/squishy_button.dart';
+import '../../widgets/swipe_to_delete_tile.dart';
 import 'map_picker_screen.dart';
 
 class RouteDetailScreen extends StatefulWidget {
@@ -287,46 +288,46 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
             )
           else
-            ListView.builder(
+            ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: halts.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
                 final halt = halts[i];
-                return FrostedCard(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  key: ValueKey(halt.id),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.2),
-                      child: Icon(
-                        Icons.schedule,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.onSurface,
+                return SwipeToDeleteTile(
+                  itemKey: halt.id,
+                  onConfirmDelete: () async {
+                    return await admin.deleteHalt(halt.id);
+                  },
+                  child: FrostedCard(
+                    margin: EdgeInsets.zero, // Margin is handled by the Swipe container now
+                    key: ValueKey('card_${halt.id}'),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.2),
+                        child: Icon(
+                          Icons.schedule,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    title: Text(halt.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Arrival: ${halt.arrivalTime}'),
-                        if (halt.latitude != null && halt.longitude != null)
-                          Text(
-                            '${halt.latitude!.toStringAsFixed(4)}, ${halt.longitude!.toStringAsFixed(4)}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: Theme.of(context).colorScheme.error,
+                      title: Text(halt.name),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Arrival: ${halt.arrivalTime}'),
+                          if (halt.latitude != null && halt.longitude != null)
+                            Text(
+                              '${halt.latitude!.toStringAsFixed(4)}, ${halt.longitude!.toStringAsFixed(4)}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                        ],
                       ),
-                      onPressed: () => admin.deleteHalt(halt.id),
+                      onTap: () => _editHalt(halt),
                     ),
-                    onTap: () => _editHalt(halt),
                   ),
                 );
               },

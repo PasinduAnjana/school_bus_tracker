@@ -4,6 +4,7 @@ import '../../providers/admin_provider.dart';
 import 'route_detail_screen.dart';
 import '../../config/app_theme.dart';
 import '../../widgets/frosted_card.dart';
+import '../../widgets/swipe_to_delete_tile.dart';
 
 class RoutesTab extends StatefulWidget {
   const RoutesTab({super.key});
@@ -150,77 +151,54 @@ class _RoutesTabState extends State<RoutesTab> {
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (_, i) {
                         final r = admin.routes[i];
-                        return FrostedCard(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              child: const Icon(Icons.route, size: 20),
-                            ),
-                            title: Text(
-                              r.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            subtitle: Text(
-                              r.driverPhone ?? 'No driver assigned',
-                              style: TextStyle(
-                                color: Theme.of(
+                        return SwipeToDeleteTile(
+                          itemKey: r.id,
+                          onConfirmDelete: () async {
+                            return await admin.deleteRoute(r.id);
+                          },
+                          child: FrostedCard(
+                            margin: EdgeInsets.zero,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(
                                   context,
-                                ).colorScheme.onSurfaceVariant,
+                                ).colorScheme.primaryContainer,
+                                child: const Icon(Icons.route, size: 20),
                               ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  onPressed: () => _showEditRouteDialog(r),
+                              title: Text(
+                                r.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: AppColors.error,
+                              ),
+                              subtitle: Text(
+                                r.driverPhone ?? 'No driver assigned',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    onPressed: () => _showEditRouteDialog(r),
                                   ),
-                                  onPressed: () async {
-                                    final ok = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Delete route'),
-                                        content: Text('Delete "${r.name}"?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, true),
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (ok == true) {
-                                      await admin.deleteRoute(r.id);
-                                    }
-                                  },
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.onSurfaceVariant,
-                                ),
-                              ],
-                            ),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RouteDetailScreen(
-                                  routeId: r.id,
-                                  routeName: r.name,
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
+                                ],
+                              ),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RouteDetailScreen(
+                                    routeId: r.id,
+                                    routeName: r.name,
+                                  ),
                                 ),
                               ),
                             ),
