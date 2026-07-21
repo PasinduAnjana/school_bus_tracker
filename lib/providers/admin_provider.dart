@@ -435,7 +435,12 @@ class AdminProvider extends ChangeNotifier {
         'longitude': longitude,
         'stop_order': halts.length,
       });
+      await SupabaseService.client
+          .from('routes')
+          .update({'encoded_path': null, 'waypoints': null})
+          .eq('id', routeId);
       await loadHalts(routeId);
+      await loadRoutes();
       return true;
     } catch (e) {
       debugPrint('addHalt error: $e');
@@ -463,7 +468,12 @@ class AdminProvider extends ChangeNotifier {
       final routeId = _haltsByRoute.entries
           .firstWhere((e) => e.value.any((h) => h.id == haltId))
           .key;
+      await SupabaseService.client
+          .from('routes')
+          .update({'encoded_path': null, 'waypoints': null})
+          .eq('id', routeId);
       await loadHalts(routeId);
+      await loadRoutes();
       return true;
     } catch (e) {
       debugPrint('updateHalt error: $e');
@@ -477,7 +487,12 @@ class AdminProvider extends ChangeNotifier {
         (e) => e.value.any((h) => h.id == haltId),
       );
       await SupabaseService.client.from('halts').delete().eq('id', haltId);
+      await SupabaseService.client
+          .from('routes')
+          .update({'encoded_path': null, 'waypoints': null})
+          .eq('id', entry.key);
       await loadHalts(entry.key);
+      await loadRoutes();
       return true;
     } catch (e) {
       debugPrint('deleteHalt error: $e');
