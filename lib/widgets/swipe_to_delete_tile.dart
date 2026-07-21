@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class SwipeToDeleteTile extends StatefulWidget {
   final String itemKey;
@@ -27,12 +28,11 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile> {
       direction: DismissDirection.endToStart,
       dismissThresholds: const {DismissDirection.endToStart: 0.4},
       onUpdate: (details) {
-        // Play a haptic pop when they drag past the threshold
         if (details.progress > 0.4 && !_hapticPlayed) {
           HapticFeedback.mediumImpact();
-          _hapticPlayed = true;
+          setState(() => _hapticPlayed = true);
         } else if (details.progress <= 0.4 && _hapticPlayed) {
-          _hapticPlayed = false;
+          setState(() => _hapticPlayed = false);
         }
       },
       confirmDismiss: (direction) async {
@@ -81,21 +81,23 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile> {
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 28),
-            SizedBox(height: 4),
-            Text(
-              'Delete',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
+        child: const Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 28)
+            .animate(target: _hapticPlayed ? 1 : 0)
+            .scale(
+              begin: const Offset(0.85, 0.85),
+              end: const Offset(1.15, 1.15),
+              duration: 200.ms,
+              curve: Curves.easeOutBack,
+            )
+            .tint(
+              color: Colors.white.withValues(alpha: 0.5),
+              duration: 100.ms,
+            )
+            .then()
+            .shake(
+              hz: 3,
+              duration: 300.ms,
             ),
-          ],
-        ),
       ),
       child: widget.child,
     );
