@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           children: [
@@ -101,7 +101,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: SquishyButton(

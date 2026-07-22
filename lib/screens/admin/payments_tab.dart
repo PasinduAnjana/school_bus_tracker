@@ -128,8 +128,7 @@ class _PaymentsTabState extends State<PaymentsTab> {
   }
 }
 
-Color get _paidColor => AppColors.primary;
-Color get _unpaidColor => AppColors.onSurfaceVariant;
+// Removed static getters in favor of context-aware theme colors
 
 class _SummaryRow extends StatelessWidget {
   final int total;
@@ -144,11 +143,13 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.outline.withValues(alpha: 0.5)),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -157,31 +158,31 @@ class _SummaryRow extends StatelessWidget {
               child: _StatTile(
                 label: 'Total',
                 value: '$total',
-                color: AppColors.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             Container(
               width: 1,
               height: 48,
-              color: AppColors.outline.withValues(alpha: 0.3),
+              color: colorScheme.outline.withValues(alpha: 0.3),
             ),
             Expanded(
               child: _StatTile(
                 label: 'Paid',
                 value: '$paid',
-                color: _paidColor,
+                color: colorScheme.primary,
               ),
             ),
             Container(
               width: 1,
               height: 48,
-              color: AppColors.outline.withValues(alpha: 0.3),
+              color: colorScheme.outline.withValues(alpha: 0.3),
             ),
             Expanded(
               child: _StatTile(
                 label: 'Unpaid',
                 value: '$unpaid',
-                color: _unpaidColor,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -222,7 +223,7 @@ class _StatTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: AppColors.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -285,6 +286,10 @@ class _PaymentCardState extends State<_PaymentCard>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final paidColor = colorScheme.primary;
+    final unpaidColor = colorScheme.onSurfaceVariant;
+
     return AnimatedBuilder(
       animation: _animCtrl,
       builder: (context, _) {
@@ -296,7 +301,7 @@ class _PaymentCardState extends State<_PaymentCard>
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: Color.lerp(_unpaidColor, _paidColor, t)!,
+                    color: Color.lerp(unpaidColor, paidColor, t)!,
                     width: 3,
                   ),
                 ),
@@ -311,15 +316,15 @@ class _PaymentCardState extends State<_PaymentCard>
                   height: 40,
                   decoration: BoxDecoration(
                     color: Color.lerp(
-                      _unpaidColor.withValues(alpha: 0.12),
-                      _paidColor.withValues(alpha: 0.15),
+                      unpaidColor.withValues(alpha: 0.12),
+                      paidColor.withValues(alpha: 0.15),
                       t,
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     widget.paid ? Icons.check : Icons.close,
-                    color: Color.lerp(_unpaidColor, _paidColor, t),
+                    color: Color.lerp(unpaidColor, paidColor, t),
                     size: 20,
                   ),
                 ),
@@ -329,8 +334,8 @@ class _PaymentCardState extends State<_PaymentCard>
                 ),
                 trailing: Switch.adaptive(
                   value: widget.paid,
-                  activeTrackColor: _paidColor,
-                  activeThumbColor: Colors.white,
+                  activeTrackColor: paidColor,
+                  activeThumbColor: colorScheme.onPrimary,
                   onChanged: widget.onToggle,
                 ),
               ),
