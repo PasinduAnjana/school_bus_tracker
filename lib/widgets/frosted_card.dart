@@ -18,17 +18,19 @@ class FrostedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     Widget card = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.04),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.03),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.03),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -41,10 +43,10 @@ class FrostedCard extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.75),
+              color: theme.colorScheme.surface.withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: AppColors.surface.withValues(alpha: 0.5),
+                color: theme.colorScheme.surface.withValues(alpha: 0.5),
               ),
             ),
             child: Material(

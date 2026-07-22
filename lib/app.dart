@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'config/app_theme.dart';
 import 'models/user.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin/admin_shell.dart';
 import 'screens/driver/driver_shell.dart';
@@ -40,11 +41,15 @@ class App extends StatelessWidget {
             home = const LoginScreen();
         }
 
+        final themeProvider = context.watch<ThemeProvider>();
+
         return MaterialApp(
           key: ValueKey(auth.status),
           title: 'NID Express',
           debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.themeMode,
           theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
           home: _UpdateCheckerWrapper(child: home),
         );
       },

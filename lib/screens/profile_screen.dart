@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
 import '../config/app_theme.dart';
 import '../widgets/frosted_card.dart';
 import '../widgets/squishy_button.dart';
@@ -12,6 +13,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final user = auth.currentUser;
 
     return Scaffold(
@@ -30,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 44,
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                       child: (user?.name != null && user!.name!.isNotEmpty)
                           ? Text(
                               user.name![0].toUpperCase(),
@@ -43,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
                           : Icon(
                               Icons.person_rounded,
                               size: 44,
-                              color: AppColors.onSurface.withValues(alpha: 0.5),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                     ),
                     const SizedBox(height: 16),
@@ -79,6 +81,23 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Role',
                     subtitle: user?.role.name.toUpperCase(),
                   ),
+                  Divider(
+                    indent: 56,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  _SettingItem(
+                    icon: Icons.dark_mode_outlined,
+                    title: 'Dark Mode',
+                    trailing: Switch(
+                      value: themeProvider.themeMode == ThemeMode.dark || 
+                             (themeProvider.themeMode == ThemeMode.system && 
+                              MediaQuery.platformBrightnessOf(context) == Brightness.dark),
+                      onChanged: (isDark) {
+                        themeProvider.setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
+                      },
+                      activeColor: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -89,8 +108,8 @@ class ProfileScreen extends StatelessWidget {
                 onTap: () => auth.signOut(),
                 icon: Icons.logout_rounded,
                 label: 'Logout',
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.onError,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
             ),
             const SizedBox(height: 24),
@@ -120,8 +139,14 @@ class _SettingItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
+  final Widget? trailing;
 
-  const _SettingItem({required this.icon, required this.title, this.subtitle});
+  const _SettingItem({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -129,32 +154,35 @@ class _SettingItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.onSurfaceVariant, size: 22),
+          Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 22),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  subtitle!,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onSurface,
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
+          if (trailing != null) trailing!,
         ],
       ),
     );
