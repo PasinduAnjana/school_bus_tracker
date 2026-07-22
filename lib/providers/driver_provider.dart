@@ -23,6 +23,7 @@ class DriverProvider extends ChangeNotifier {
   StreamSubscription<LocationData>? _locationStream;
   bool _gpsReady = false;
   bool _resumed = false;
+  String? _assignedBusName;
 
   List<Map<String, dynamic>> get routes => _routes;
   List<Halt> get halts => _halts;
@@ -45,6 +46,8 @@ class DriverProvider extends ChangeNotifier {
       return null;
     }
   }
+
+  String? get assignedBusName => _assignedBusName;
 
   Future<void> initGps() async {
     final permitted = await LocationService.requestPermission();
@@ -70,12 +73,39 @@ class DriverProvider extends ChangeNotifier {
 
   Future<void> loadRoutes(String driverId) async {
     try {
-      final data = await SupabaseService.client
-          .from('routes')
+      final busData = await SupabaseService.client
+          .from('buses')
           .select('id, name')
-          .eq('driver_id', driverId)
-          .order('name');
-      _routes = (data as List).cast<Map<String, dynamic>>();
+          .eq('driver_id', driverId);
+
+      final busesList = busData as List;
+
+      if (busesList.isNotEmpty) {
+        if (busesList.length == 1) {
+          _assignedBusName = busesList[0]['name'] as String;
+        } else {
+          _assignedBusName = '${busesList.length} Buses';
+        }
+        
+        final busIds = busesList.map((b) => b['id'] as String).toList();
+
+        final data = await SupabaseService.client
+            .from('routes')
+            .select('id, name')
+            .inFilter('bus_id', busIds)
+            .order('name');
+        _routes = (data as List).cast<Map<String, dynamic>>();
+      } else {
+        // Fallback for legacy routes not yet assigned to a bus
+        final data = await SupabaseService.client
+            .from('routes')
+            .select('id, name')
+            .eq('driver_id', driverId)
+            .order('name');
+        _routes = (data as List).cast<Map<String, dynamic>>();
+        _assignedBusName = null;
+      }
+
       if (_routes.length == 1) {
         _selectedRouteId = _routes[0]['id'] as String;
         await _loadHalts(_selectedRouteId!);

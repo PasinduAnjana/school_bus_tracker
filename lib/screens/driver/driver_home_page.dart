@@ -121,6 +121,17 @@ class _IdleContent extends StatelessWidget {
 
     return Column(
       children: [
+        if (driver.assignedBusName != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            child: Text(
+              'Assigned to: ${driver.assignedBusName}',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
         if (driver.routes.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: 8),

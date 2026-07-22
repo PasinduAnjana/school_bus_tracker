@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../models/bus.dart';
 import '../models/halt.dart';
 import '../services/supabase_client.dart';
 import '../utils/phone_utils.dart';
@@ -34,6 +35,7 @@ class StudentWithParent {
   final String? parentName;
   final String? routeId;
   final String? routeName;
+  final List<String> busIds;
 
   StudentWithParent({
     required this.id,
@@ -43,6 +45,7 @@ class StudentWithParent {
     this.parentName,
     this.routeId,
     this.routeName,
+    this.busIds = const [],
   });
 
   factory StudentWithParent.fromMap(Map<String, dynamic> map) {
@@ -56,6 +59,7 @@ class StudentWithParent {
       parentName: parent?['name'] as String?,
       routeId: map['route_id'] as String?,
       routeName: route?['name'] as String?,
+      busIds: (map['bus_ids'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }
@@ -65,6 +69,8 @@ class RouteWithDriver {
   final String name;
   final String? driverId;
   final String? driverPhone;
+  final String? busId;
+  final String? busName;
   final String? encodedPath;
   final List<dynamic>? waypoints;
 
@@ -73,6 +79,8 @@ class RouteWithDriver {
     required this.name,
     this.driverId,
     this.driverPhone,
+    this.busId,
+    this.busName,
     this.encodedPath,
     this.waypoints,
   });
@@ -83,6 +91,8 @@ class RouteWithDriver {
       name: map['name'] as String,
       driverId: map['driver_id'] as String?,
       driverPhone: map['driver_phone'] as String?,
+      busId: map['bus_id'] as String?,
+      busName: map['bus_name'] as String?,
       encodedPath: map['encoded_path'] as String?,
       waypoints: map['waypoints'] as List<dynamic>?,
     );
@@ -119,6 +129,7 @@ class AdminProvider extends ChangeNotifier {
   List<WhitelistedUser> _users = [];
   List<StudentWithParent> _students = [];
   List<RouteWithDriver> _routes = [];
+  List<Bus> _buses = [];
   List<PaymentWithStudent> _payments = [];
   final Map<String, List<Halt>> _haltsByRoute = {};
   String _selectedMonth = '';
@@ -127,6 +138,7 @@ class AdminProvider extends ChangeNotifier {
   List<WhitelistedUser> get users => _users;
   List<StudentWithParent> get students => _students;
   List<RouteWithDriver> get routes => _routes;
+  List<Bus> get buses => _buses;
   List<PaymentWithStudent> get payments => _payments;
   List<WhitelistedUser> get drivers =>
       _users.where((u) => u.role == 'Driver').toList();
@@ -209,7 +221,7 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('students')
           .select(
-            'id, name, parent_id, route_id, parent:users_whitelist!parent_id(phone_number, name), route:routes!route_id(name)',
+            'id, name, parent_id, route_id, bus_ids, parent:users_whitelist!parent_id(phone_number, name), route:routes!route_id(name)',
           )
           .order('name');
       _students = (data as List)
@@ -255,7 +267,7 @@ class AdminProvider extends ChangeNotifier {
       await SupabaseService.client.from('students').insert({
         'name': studentName,
         'parent_id': parent.id,
-        'route_id': routeId,
+        'bus_ids': [],
       });
       await loadStudents();
       return true;
@@ -280,7 +292,7 @@ class AdminProvider extends ChangeNotifier {
     try {
       await SupabaseService.client
           .from('students')
-          .update({'route_id': routeId})
+          .update({'bus_ids': []}) // Legacy signature - we'll add updateStudentBuses next
           .eq('id', studentId);
       await loadStudents();
       return true;
@@ -311,12 +323,13 @@ class AdminProvider extends ChangeNotifier {
       final data = await SupabaseService.client
           .from('routes')
           .select(
-            'id, name, driver_id, encoded_path, waypoints, driver:users_whitelist!driver_id(phone_number, name)',
+            'id, name, bus_id, driver_id, encoded_path, waypoints, driver:users_whitelist!driver_id(phone_number, name), bus:buses!bus_id(name)',
           )
           .order('name');
       _routes = (data as List).map((e) {
         final map = e as Map<String, dynamic>;
         final driver = map['driver'] as Map<String, dynamic>?;
+        final bus = map['bus'] as Map<String, dynamic>?;
         final driverName = driver?['name'] as String?;
         final driverPhone = driver?['phone_number'] as String?;
         return RouteWithDriver(
@@ -324,6 +337,8 @@ class AdminProvider extends ChangeNotifier {
           name: map['name'] as String,
           driverId: map['driver_id'] as String?,
           driverPhone: driverName != null ? '$driverName ($driverPhone)' : driverPhone,
+          busId: map['bus_id'] as String?,
+          busName: bus?['name'] as String?,
           encodedPath: map['encoded_path'] as String?,
           waypoints: map['waypoints'] as List<dynamic>?,
         );
@@ -335,23 +350,26 @@ class AdminProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> assignDriver(String routeId, String? driverId) async {
+  Future<bool> assignBusToRoute(String routeId, String? busId) async {
     try {
       await SupabaseService.client
           .from('routes')
-          .update({'driver_id': driverId})
+          .update({'bus_id': busId})
           .eq('id', routeId);
       await loadRoutes();
       return true;
     } catch (e) {
-      debugPrint('assignDriver error: $e');
+      debugPrint('assignBusToRoute error: $e');
       return false;
     }
   }
 
-  Future<bool> createRoute(String name) async {
+  Future<bool> createRoute(String name, {String? busId}) async {
     try {
-      await SupabaseService.client.from('routes').insert({'name': name});
+      await SupabaseService.client.from('routes').insert({
+        'name': name,
+        if (busId != null) 'bus_id': busId,
+      });
       await loadRoutes();
       return true;
     } catch (e) {
@@ -601,6 +619,89 @@ class AdminProvider extends ChangeNotifier {
         notifyListeners();
       }
       debugPrint('togglePayment error: $e');
+      return false;
+    }
+  }
+
+  Future<void> loadBuses() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final data = await SupabaseService.client
+          .from('buses')
+          .select('id, name, driver_id')
+          .order('name');
+      _buses = (data as List).map((e) => Bus.fromMap(e)).toList();
+    } catch (e) {
+      debugPrint('loadBuses error: $e');
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> createBus(String name) async {
+    try {
+      await SupabaseService.client.from('buses').insert({'name': name});
+      await loadBuses();
+      return true;
+    } catch (e) {
+      debugPrint('createBus error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> assignDriverToBus(String busId, String? driverId) async {
+    try {
+      await SupabaseService.client
+          .from('buses')
+          .update({'driver_id': driverId})
+          .eq('id', busId);
+      await loadBuses();
+      await loadRoutes(); // Routes driver_id might update due to trigger
+      return true;
+    } catch (e) {
+      debugPrint('assignDriverToBus error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateBusName(String id, String name) async {
+    try {
+      await SupabaseService.client
+          .from('buses')
+          .update({'name': name.trim()})
+          .eq('id', id);
+      await loadBuses();
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating bus name: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteBus(String id) async {
+    try {
+      await SupabaseService.client.from('buses').delete().eq('id', id);
+      await loadBuses();
+      await loadRoutes();
+      return true;
+    } catch (e) {
+      debugPrint('deleteBus error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateStudentBuses(String studentId, List<String> busIds) async {
+    try {
+      await SupabaseService.client
+          .from('students')
+          .update({'bus_ids': busIds})
+          .eq('id', studentId);
+      await loadStudents();
+      return true;
+    } catch (e) {
+      debugPrint('updateStudentBuses error: $e');
       return false;
     }
   }

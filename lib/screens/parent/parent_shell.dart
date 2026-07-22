@@ -53,15 +53,11 @@ class _ParentShellState extends State<ParentShell> {
   @override
   Widget build(BuildContext context) {
     final monitor = context.watch<MonitorProvider>();
-    final students = monitor.parentStudents;
-
-    final routeAssignments = students
-        .where((s) => s.routeId != null && s.routeName != null)
-        .map((s) => (s.routeId!, s.routeName!))
-        .toSet()
+    final routeAssignments = monitor.parentAllowedRoutes
+        .map((r) => (r['id']!, r['name']!))
         .toList();
 
-    if (_selectedRouteId == null && routeAssignments.length == 1) {
+    if (_selectedRouteId == null && routeAssignments.isNotEmpty) {
       _selectedRouteId = routeAssignments.first.$1;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _onRouteSelected(_selectedRouteId);

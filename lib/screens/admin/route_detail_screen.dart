@@ -24,16 +24,13 @@ class RouteDetailScreen extends StatefulWidget {
 }
 
 class _RouteDetailScreenState extends State<RouteDetailScreen> {
-  String? _selectedDriverId;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final admin = context.read<AdminProvider>();
+      admin.loadBuses();
       admin.loadHalts(widget.routeId);
-      final route = admin.routes.firstWhere((r) => r.id == widget.routeId);
-      setState(() => _selectedDriverId = route.driverId);
     });
   }
 
@@ -247,38 +244,6 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          FrostedCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Assign Driver',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('driver_$_selectedDriverId'),
-                  initialValue: _selectedDriverId,
-                  decoration: const InputDecoration(labelText: 'Driver'),
-                  items: admin.drivers
-                      .map(
-                        (d) => DropdownMenuItem(
-                          value: d.id,
-                          child: Text(d.phoneNumber),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) {
-                    setState(() => _selectedDriverId = v);
-                    if (v != null) {
-                      admin.assignDriver(widget.routeId, v);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           SquishyButton(
             onTap: () {
               Navigator.push(

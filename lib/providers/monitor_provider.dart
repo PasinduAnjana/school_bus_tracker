@@ -9,6 +9,7 @@ class ActiveTrip {
   final String locationId;
   final String routeId;
   final String routeName;
+  final String? busId;
   final String? encodedPath;
   final String driverId;
   final String driverPhone;
@@ -21,6 +22,7 @@ class ActiveTrip {
     required this.locationId,
     required this.routeId,
     required this.routeName,
+    this.busId,
     this.encodedPath,
     required this.driverId,
     required this.driverPhone,
@@ -39,6 +41,7 @@ class ActiveTrip {
       locationId: map['id'] as String,
       routeId: map['route_id'] as String,
       routeName: route?['name'] as String? ?? 'Unknown',
+      busId: route?['bus_id'] as String?,
       encodedPath: route?['encoded_path'] as String?,
       driverId: map['driver_id'] as String,
       driverPhone: driver?['phone_number'] as String? ?? 'Unknown',
@@ -59,22 +62,44 @@ class MonitorProvider extends ChangeNotifier {
   String? _lastLoadedLocationId;
   final Map<String?, RealtimeChannel> _channels = {};
   List<StudentWithParent> _parentStudents = [];
+  List<Map<String, String>> _parentAllowedRoutes = [];
 
   List<ActiveTrip> get activeTrips => _activeTrips;
   List<Halt> get halts => _halts;
   Set<String> get completedHaltIds => _completedHaltIds;
   List<StudentWithParent> get parentStudents => _parentStudents;
+  List<Map<String, String>> get parentAllowedRoutes => _parentAllowedRoutes;
 
   // Find the route IDs assigned to this parent's children
   Future<void> loadParentStudents(String parentId) async {
     try {
       final data = await SupabaseService.client
           .from('students')
-          .select('id, name, parent_id, route_id, route:routes!route_id(name)')
+          .select('id, name, parent_id, route_id, bus_ids, route:routes!route_id(name)')
           .eq('parent_id', parentId);
       _parentStudents = (data as List)
           .map((e) => StudentWithParent.fromMap(e as Map<String, dynamic>))
           .toList();
+          
+      // Gather all unique busIds
+      final allBusIds = _parentStudents
+          .expand((s) => s.busIds)
+          .toSet()
+          .toList();
+
+      if (allBusIds.isNotEmpty) {
+        final routesData = await SupabaseService.client
+            .from('routes')
+            .select('id, name')
+            .inFilter('bus_id', allBusIds);
+        _parentAllowedRoutes = (routesData as List).map((r) => {
+          'id': r['id'] as String,
+          'name': r['name'] as String,
+        }).toList();
+      } else {
+        _parentAllowedRoutes = [];
+      }
+      
       notifyListeners();
     } catch (e) {
       debugPrint('loadParentStudents error: $e');
@@ -87,7 +112,7 @@ class MonitorProvider extends ChangeNotifier {
           .from('live_locations')
           .select(
             'id, route_id, driver_id, latitude, longitude, recorded_at, '
-            'route:routes(name, encoded_path), driver:users_whitelist(phone_number, name)',
+            'route:routes(name, bus_id, encoded_path), driver:users_whitelist(phone_number, name)',
           )
           .eq('trip_active', true);
       if (routeId != null) {

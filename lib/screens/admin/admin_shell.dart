@@ -6,7 +6,7 @@ import 'drivers_tab.dart';
 import 'monitor_tab.dart';
 import 'users_tab.dart';
 import 'payments_tab.dart';
-import 'routes_tab.dart';
+import 'buses_tab.dart';
 import '../../widgets/frosted_nav_bar.dart';
 
 class AdminShell extends StatefulWidget {
@@ -23,7 +23,7 @@ class _AdminShellState extends State<AdminShell> {
     _TabItem(label: 'Students', icon: Icons.people_outline),
     _TabItem(label: 'Drivers', icon: Icons.person_pin_outlined),
     _TabItem(label: 'Payments', icon: Icons.account_balance_wallet_outlined),
-    _TabItem(label: 'Routes', icon: Icons.route_outlined),
+    _TabItem(label: 'Buses', icon: Icons.directions_bus_outlined),
     _TabItem(label: 'Monitor', icon: Icons.map_outlined),
   ];
 
@@ -50,7 +50,7 @@ class _AdminShellState extends State<AdminShell> {
             UsersTab(),
             DriversTab(),
             PaymentsTab(),
-            RoutesTab(),
+            BusesTab(),
             MonitorTab(),
           ],
         ),

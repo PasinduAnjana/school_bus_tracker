@@ -19,7 +19,7 @@ class _UsersTabState extends State<UsersTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdminProvider>().loadUsers();
       context.read<AdminProvider>().loadStudents();
-      context.read<AdminProvider>().loadRoutes();
+      context.read<AdminProvider>().loadBuses();
     });
   }
 
@@ -28,7 +28,7 @@ class _UsersTabState extends State<UsersTab> {
     final phoneCtrl = TextEditingController();
     final parentNameCtrl = TextEditingController();
     var showParentName = false;
-    String? selectedRouteId;
+    final Set<String> selectedBusIds = {};
 
     final ok = await showDialog<bool>(
       context: context,
@@ -97,26 +97,48 @@ class _UsersTabState extends State<UsersTab> {
                         ),
                       ],
                       const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedRouteId,
-                        decoration: const InputDecoration(
-                          labelText: 'Select bus',
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Select Buses',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text('None'),
-                          ),
-                          ...admin.routes.map(
-                            (r) => DropdownMenuItem(
-                              value: r.id,
-                              child: Text(r.name),
-                            ),
-                          ),
-                        ],
-                        onChanged: (v) =>
-                            setDialogState(() => selectedRouteId = v),
                       ),
+                      const SizedBox(height: 8),
+                      if (admin.buses.isEmpty)
+                        const Text('No buses available', style: TextStyle(fontStyle: FontStyle.italic))
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: admin.buses.map((b) {
+                            final isSelected = selectedBusIds.contains(b.id);
+                            return FilterChip(
+                              label: Text(b.name),
+                              selected: isSelected,
+                              backgroundColor: Theme.of(context).colorScheme.surfaceDim,
+                              selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                              checkmarkColor: Theme.of(context).colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.outline,
+                                ),
+                              ),
+                              onSelected: (selected) {
+                                setDialogState(() {
+                                  if (selected) {
+                                    selectedBusIds.add(b.id);
+                                  } else {
+                                    selectedBusIds.remove(b.id);
+                                  }
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
                     ],
                   ),
                 ),
@@ -155,14 +177,23 @@ class _UsersTabState extends State<UsersTab> {
       name,
       phone,
       parentName,
-      routeId: selectedRouteId,
     );
+    
+    // Assign buses immediately after creation
+    // To do this reliably, we can just load the last created student by phone
+    // However, it's easier to just pass busIds to addStudentWithParent if we updated it.
+    // Let's modify addStudentWithParent below to accept busIds.
+    // For now, we'll do it if we update admin_provider. 
+    // Since we didn't, we'll fetch the created student and update it.
+    final admin = context.read<AdminProvider>();
+    final student = admin.students.firstWhere((s) => s.name == name && s.parentPhone == phone, orElse: () => admin.students.first);
+    await admin.updateStudentBuses(student.id, selectedBusIds.toList());
   }
 
   Future<void> _showEditStudentDialog(StudentWithParent s) async {
     final nameCtrl = TextEditingController(text: s.name);
     final parentNameCtrl = TextEditingController(text: s.parentName ?? '');
-    String? selectedRouteId = s.routeId;
+    final Set<String> selectedBusIds = Set.from(s.busIds);
 
     final ok = await showDialog<bool>(
       context: context,
@@ -192,17 +223,48 @@ class _UsersTabState extends State<UsersTab> {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedRouteId,
-                    decoration: const InputDecoration(labelText: 'Select bus'),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('None')),
-                      ...admin.routes.map(
-                        (r) => DropdownMenuItem(value: r.id, child: Text(r.name)),
-                      ),
-                    ],
-                    onChanged: (v) => setDialogState(() => selectedRouteId = v),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Select Buses',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  if (admin.buses.isEmpty)
+                    const Text('No buses available', style: TextStyle(fontStyle: FontStyle.italic))
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: admin.buses.map((b) {
+                        final isSelected = selectedBusIds.contains(b.id);
+                        return FilterChip(
+                          label: Text(b.name),
+                          selected: isSelected,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceDim,
+                          selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                          checkmarkColor: Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                          onSelected: (selected) {
+                            setDialogState(() {
+                              if (selected) {
+                                selectedBusIds.add(b.id);
+                              } else {
+                                selectedBusIds.remove(b.id);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
                 ],
               ),
               actions: [
@@ -233,9 +295,7 @@ class _UsersTabState extends State<UsersTab> {
     final admin = context.read<AdminProvider>();
     await admin.updateStudentName(s.id, newName);
     
-    if (s.routeId != selectedRouteId) {
-      await admin.updateStudentRoute(s.id, selectedRouteId);
-    }
+    await admin.updateStudentBuses(s.id, selectedBusIds.toList());
 
     if (s.parentId != null && newParentName.isNotEmpty) {
       await admin.updateUserName(s.parentId!, newParentName);
@@ -323,8 +383,8 @@ class _UsersTabState extends State<UsersTab> {
                                 ),
                               ),
                               subtitle: Text(
-                                s.routeName != null
-                                    ? 'Bus: ${s.routeName}'
+                                s.busIds.isNotEmpty
+                                    ? 'Buses: ${s.busIds.map((id) => admin.buses.where((b) => b.id == id).firstOrNull?.name ?? 'Unknown').join(', ')}'
                                     : (s.parentName != null
                                         ? '${s.parentName} (${s.parentPhone})'
                                         : (s.parentPhone ?? 'No parent')),
