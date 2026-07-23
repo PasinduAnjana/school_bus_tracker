@@ -183,7 +183,11 @@ class _IdleContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Ready to go',
+                        driver.routes.isEmpty
+                            ? 'No route assigned'
+                            : driver.selectedRouteId == null
+                                ? 'Select a Route'
+                                : 'Ready to go',
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: theme.colorScheme.onSurface,
@@ -192,8 +196,10 @@ class _IdleContent extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         driver.routes.isEmpty
-                            ? 'No route assigned'
-                            : 'Select a route and press start',
+                            ? 'Please contact your administrator'
+                            : driver.selectedRouteId == null
+                                ? 'Choose a route from below to begin'
+                                : 'Press start to begin your trip',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

@@ -15,6 +15,7 @@ class DriverProvider extends ChangeNotifier {
   bool _tripActive = false;
   String? _liveLocationId;
   final Set<String> _completedHalts = {};
+  final Map<String, DateTime> _completedHaltTimes = {};
   double? _currentLat;
   double? _currentLng;
   DateTime? _lastPing;
@@ -30,6 +31,7 @@ class DriverProvider extends ChangeNotifier {
   String? get selectedRouteId => _selectedRouteId;
   bool get tripActive => _tripActive;
   Set<String> get completedHalts => _completedHalts;
+  Map<String, DateTime> get completedHaltTimes => _completedHaltTimes;
   double? get currentLat => _currentLat;
   double? get currentLng => _currentLng;
   DateTime? get lastPing => _lastPing;
@@ -167,6 +169,7 @@ class DriverProvider extends ChangeNotifier {
   Future<void> selectRoute(String routeId) async {
     _selectedRouteId = routeId;
     _completedHalts.clear();
+    _completedHaltTimes.clear();
     notifyListeners();
     await _loadHalts(routeId);
   }
@@ -186,8 +189,13 @@ class DriverProvider extends ChangeNotifier {
             .select('halt_id')
             .eq('live_location_id', _liveLocationId!);
         _completedHalts.clear();
+        _completedHaltTimes.clear();
         for (final row in tripData as List) {
-          _completedHalts.add(row['halt_id'] as String);
+          final haltId = row['halt_id'] as String;
+          _completedHalts.add(haltId);
+          if (row['completed_at'] != null) {
+            _completedHaltTimes[haltId] = DateTime.parse(row['completed_at'] as String).toLocal();
+          }
         }
       }
 
@@ -270,6 +278,7 @@ class DriverProvider extends ChangeNotifier {
   Future<void> stopTrip() async {
     _tripActive = false;
     _completedHalts.clear();
+    _completedHaltTimes.clear();
     notifyListeners();
     _stopPinging();
 
@@ -300,6 +309,7 @@ class DriverProvider extends ChangeNotifier {
     _tripActive = false;
     _liveLocationId = null;
     _completedHalts.clear();
+    _completedHaltTimes.clear();
     _lastPing = null;
     _resumed = false;
     notifyListeners();
@@ -351,7 +361,7 @@ class DriverProvider extends ChangeNotifier {
     try {
       final tripData = await SupabaseService.client
           .from('trip_halts')
-          .select('halt_id')
+          .select('halt_id, completed_at')
           .eq('live_location_id', _liveLocationId!);
       
       bool changed = false;
@@ -359,6 +369,9 @@ class DriverProvider extends ChangeNotifier {
         final haltId = row['halt_id'] as String;
         if (!_completedHalts.contains(haltId)) {
           _completedHalts.add(haltId);
+          if (row['completed_at'] != null) {
+            _completedHaltTimes[haltId] = DateTime.parse(row['completed_at'] as String).toLocal();
+          }
           changed = true;
         }
       }
@@ -392,6 +405,7 @@ class DriverProvider extends ChangeNotifier {
 
         for (final missedHalt in missedHalts) {
           _completedHalts.add(missedHalt.id);
+          _completedHaltTimes[missedHalt.id] = DateTime.now();
           try {
             await SupabaseService.client.from('trip_halts').insert({
               'live_location_id': _liveLocationId!,
@@ -428,6 +442,7 @@ class DriverProvider extends ChangeNotifier {
     _tripActive = false;
     _liveLocationId = null;
     _completedHalts.clear();
+    _completedHaltTimes.clear();
     _currentLat = null;
     _currentLng = null;
     _lastPing = null;

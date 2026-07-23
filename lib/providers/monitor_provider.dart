@@ -57,6 +57,7 @@ class MonitorProvider extends ChangeNotifier {
   List<ActiveTrip> _activeTrips = [];
   List<Halt> _halts = [];
   final Set<String> _completedHaltIds = {};
+  final Map<String, DateTime> _completedHaltTimes = {};
 
   String? _lastLoadedRouteId;
   String? _lastLoadedLocationId;
@@ -67,6 +68,7 @@ class MonitorProvider extends ChangeNotifier {
   List<ActiveTrip> get activeTrips => _activeTrips;
   List<Halt> get halts => _halts;
   Set<String> get completedHaltIds => _completedHaltIds;
+  Map<String, DateTime> get completedHaltTimes => _completedHaltTimes;
   List<StudentWithParent> get parentStudents => _parentStudents;
   List<Map<String, String>> get parentAllowedRoutes => _parentAllowedRoutes;
 
@@ -199,13 +201,18 @@ class MonitorProvider extends ChangeNotifier {
       _halts = (haltData as List).map((e) => Halt.fromMap(e)).toList();
 
       _completedHaltIds.clear();
+      _completedHaltTimes.clear();
       if (liveLocationId != null) {
         final tripData = await SupabaseService.client
             .from('trip_halts')
-            .select('halt_id')
+            .select('halt_id, completed_at')
             .eq('live_location_id', liveLocationId);
         for (final row in tripData as List) {
-          _completedHaltIds.add(row['halt_id'] as String);
+          final haltId = row['halt_id'] as String;
+          _completedHaltIds.add(haltId);
+          if (row['completed_at'] != null) {
+            _completedHaltTimes[haltId] = DateTime.parse(row['completed_at'] as String).toLocal();
+          }
         }
       }
       notifyListeners();

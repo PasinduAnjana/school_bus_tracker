@@ -8,6 +8,7 @@ class HaltTile extends StatelessWidget {
   final bool isNext;
   final bool isTripActive;
   final VoidCallback? onTap;
+  final DateTime? completedAt;
 
   const HaltTile({
     super.key,
@@ -16,6 +17,7 @@ class HaltTile extends StatelessWidget {
     required this.isNext,
     this.isTripActive = true,
     this.onTap,
+    this.completedAt,
   });
 
   String _getTimingStatus(String arrivalTime, bool isDone, bool isTripActive) {
@@ -128,7 +130,9 @@ class HaltTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          halt.arrivalTime,
+                          isDone && completedAt != null
+                              ? 'Arrived at ${completedAt!.hour.toString().padLeft(2, '0')}:${completedAt!.minute.toString().padLeft(2, '0')}'
+                              : halt.arrivalTime,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,

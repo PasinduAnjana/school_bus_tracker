@@ -116,6 +116,7 @@ class DriverStopsPage extends StatelessWidget {
                 isDone: done,
                 isNext: isNext,
                 isTripActive: driver.tripActive,
+                completedAt: driver.completedHaltTimes[halt.id],
                 onTap: halt.latitude != null && halt.longitude != null
                     ? () => onHaltTap?.call(halt)
                     : null,

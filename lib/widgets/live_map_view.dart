@@ -389,6 +389,7 @@ class _LiveMapViewState extends State<LiveMapView> {
                                 isDone: done,
                                 isNext: isNext,
                                 isTripActive: true,
+                                completedAt: monitor.completedHaltTimes[halt.id],
                                 onTap: halt.latitude != null && halt.longitude != null
                                     ? () => _mapController.move(
                                         LatLng(halt.latitude!, halt.longitude!),
@@ -511,6 +512,7 @@ class _LiveMapViewState extends State<LiveMapView> {
                                   isDone: monitor.completedHaltIds
                                       .contains(halt.id),
                                   isNext: halt.id == nextHalt?.id,
+                                  completedAt: monitor.completedHaltTimes[halt.id],
                                   onTap:
                                       halt.latitude != null &&
                                           halt.longitude != null
