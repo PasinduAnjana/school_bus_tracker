@@ -46,8 +46,8 @@ class ParentHomePage extends StatelessWidget {
       );
     }
 
-    final hasRoute = students.any((s) => s.routeId != null);
-    if (!hasRoute) {
+    final hasBus = students.any((s) => s.busIds.isNotEmpty);
+    if (!hasBus) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -177,6 +177,8 @@ class _ChildInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final monitor = context.watch<MonitorProvider>();
+    final allowedRoutes = monitor.parentAllowedRoutes;
     return FrostedCard(
       padding: const EdgeInsets.all(20),
       borderRadius: 20,
@@ -224,7 +226,7 @@ class _ChildInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          if (students.any((s) => s.routeName != null)) ...[
+          if (allowedRoutes.isNotEmpty) ...[
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -244,11 +246,7 @@ class _ChildInfoCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    students
-                        .where((s) => s.routeName != null)
-                        .map((s) => s.routeName)
-                        .toSet()
-                        .join(', '),
+                    allowedRoutes.map((r) => r['name']).toSet().join(', '),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
