@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -404,11 +405,33 @@ class _LiveMapViewState extends State<LiveMapView> {
                                   selected?.locationId == t.locationId;
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
-                                child: FrostedCard(
-                                  child: InkWell(
-                                    onTap: () => _selectTrip(t),
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Padding(
+                                child: Dismissible(
+                                  key: ValueKey('map_action_${t.locationId}'),
+                                  direction: DismissDirection.endToStart,
+                                  dismissThresholds: const {DismissDirection.endToStart: 0.3},
+                                  confirmDismiss: (_) async {
+                                    HapticFeedback.lightImpact();
+                                    _showTripOnMap(t);
+                                    return false;
+                                  },
+                                  background: Container(
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primaryContainer,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    child: Icon(
+                                      Icons.map,
+                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                  child: FrostedCard(
+                                    margin: EdgeInsets.zero,
+                                    child: InkWell(
+                                      onTap: () => _selectTrip(t),
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Padding(
                                       padding: const EdgeInsets.all(12),
                                       child: Row(
                                         children: [
@@ -469,26 +492,7 @@ class _LiveMapViewState extends State<LiveMapView> {
                                             '${t.recordedAt.toLocal().hour.toString().padLeft(2, '0')}:${t.recordedAt.toLocal().minute.toString().padLeft(2, '0')}',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          InkWell(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                            onTap: () => _showTripOnMap(t),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(6),
-                                              child: Icon(
-                                                Icons.map,
-                                                size: 18,
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.primary,
-                                              ),
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                         ],
@@ -496,7 +500,8 @@ class _LiveMapViewState extends State<LiveMapView> {
                                     ),
                                   ),
                                 ),
-                              );
+                              ),
+                            );
                             }),
                             if (selected != null &&
                                 monitor.halts.isNotEmpty) ...[
